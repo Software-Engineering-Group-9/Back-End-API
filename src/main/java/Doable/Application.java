@@ -1,4 +1,4 @@
-package DoAble;
+package Doable;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
