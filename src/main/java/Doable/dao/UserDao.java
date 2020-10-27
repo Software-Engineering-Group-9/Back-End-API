@@ -1,8 +1,8 @@
 package Doable.dao;
 
 import Doable.model.User;
-import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
 
@@ -16,4 +16,12 @@ public interface UserDao {
     }
 
     List<User> selectAllUsers();
+
+    Optional<User> selectUserById(UUID id);
+
+    Optional<User> selectUserByEmail(String email);
+
+    int deleteUserById(UUID id);
+
+    int updateUserById(UUID id, User user);
 }
