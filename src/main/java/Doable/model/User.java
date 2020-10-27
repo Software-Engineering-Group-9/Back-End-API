@@ -15,11 +15,17 @@ public class User {
 
     public User(@JsonProperty("id") UUID id,
                 @JsonProperty("email") String email,
-                @JsonProperty("password") String passwordtext)
+                @JsonProperty("password") String password)
                 {
         this.id = id;
         this.email = email;
-        this.password = passwordtext;
+        this.password = password;
+    }
+
+    public User(@JsonProperty("email") String email, @JsonProperty("password") String password){
+        this.id = UUID.randomUUID();
+        this.email = email;
+        this.password = password;
     }
 
     public UUID getId() {

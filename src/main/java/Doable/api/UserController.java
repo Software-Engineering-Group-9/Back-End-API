@@ -2,6 +2,7 @@ package Doable.api;
 
 import Doable.model.User;
 import Doable.service.UserService;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +11,7 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 
-
+@CrossOrigin
 @RequestMapping("api/v1/user")
 @RestController
 public class UserController {
@@ -23,9 +24,15 @@ public class UserController {
     }
 
     @PostMapping
-    public void addUser(@Valid @NotNull @RequestBody User user){
-        userService.addUser(user);
+    public void addUser(@Valid @NotNull @RequestBody String string){
+        JSONObject jObject = new JSONObject(string);
+        userService.addUser(new User(jObject.getString("email"), jObject.getString("password")));
     }
+
+//    @PostMapping
+//    public void addUser(@Valid @NotNull @RequestBody User user){
+//        userService.addUser(user);
+//    }
 
     @GetMapping
     public List<User> getAllUsers(){

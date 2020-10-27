@@ -1,7 +1,7 @@
 # Read Me First
 The following was discovered as part of building this project:
 
-* The original package name 'DoAble.' is invalid and this project uses 'DoAble' instead.
+* The original package name 'Doable.' is invalid and this project uses 'Doable' instead.
 
 # Getting Started
 
