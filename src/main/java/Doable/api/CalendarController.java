@@ -1,5 +1,6 @@
 package Doable.api;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,18 +13,17 @@ import javax.validation.constraints.NotNull;
 public class CalendarController {
 
     @PostMapping("/create")
-    public void addEvent(@Valid @NotNull @RequestBody String EventInfo){
+    public void addEvent(@Valid @NotNull @RequestBody String EventInfo) {
         JSONObject jObject = new JSONObject(EventInfo);
     }
 
-
     @PutMapping("/update")
-    public void updateEvent(@Valid @NotNull @RequestBody String EventInfo){
+    public void updateEvent(@Valid @NotNull @RequestBody String EventInfo) {
         JSONObject jObject = new JSONObject(EventInfo);
     }
 
     @DeleteMapping("/delete")
-    public void deleteEvent(@Valid @NotNull @RequestBody String EventInfo){
+    public void deleteEvent(@Valid @NotNull @RequestBody String EventInfo) {
         JSONObject jObject = new JSONObject(EventInfo);
     }
 
