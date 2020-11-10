@@ -2,19 +2,29 @@ package Doable.api;
 
 import Doable.model.User;
 import Doable.service.UserService;
-import org.json.JSONObject;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+
+// todo: establish a connection with the oracle sql server
 
 @CrossOrigin
 @RequestMapping("api/v1/user")
 @RestController
 public class UserController {
+
 
     private final UserService userService;
 
@@ -23,35 +33,49 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public void addUser(@Valid @NotNull @RequestBody String string){
-        JSONObject jObject = new JSONObject(string);
-        userService.addUser(new User(jObject.getString("email"), jObject.getString("password")));
+    @PostMapping("/register")
+    public String register(@RequestParam("email") String email, @RequestParam("password") String pwd) {
+        // todo: Check if user already exists in the database else return error
+        // todo: add user to the database if user doesn't exists and return 200
+        User u = new User(UUID.randomUUID(), email, pwd);
+        String token = getJWTToken(u);
+        return token;
     }
 
-//    @PostMapping
-//    public void addUser(@Valid @NotNull @RequestBody User user){
-//        userService.addUser(user);
-//    }
+    @PostMapping("/login")
+    public String login(@RequestParam("email") String email, @RequestParam("password") String pwd) {
+        // todo: check if username and password matches in the database else return error
+        // todo: if autheication is successful return code 200 and the authenication  token (if still valid) else create new token with getJWTToken method  */
+        // todo: change to GET Mapping
 
-    @GetMapping
-    public List<User> getAllUsers(){
-        return userService.getAllUsers();
+        return "temp";
     }
 
-    @GetMapping(path = "{id}")
-    public User getUserById(@PathVariable("id") UUID id){
-        return userService.getUserById(id).orElse(null);
-    }
+    /**
+     * Create a JWT token
+     * @param user new user data
+     * @return JWT token with HS512 signature
+     */
+    private String getJWTToken(User user) {
+        Claims claims = Jwts.claims().setSubject(user.getEmail());
+        claims.put("userId", user.getId() + "");
 
-    @DeleteMapping(path = "{id}")
-    public void deleteUserById(@PathVariable("id") UUID id){
-        userService.deleteUser(id);
-    }
+        // Create Role user
+        List<GrantedAuthority> grantedAuthorities = AuthorityUtils
+                .commaSeparatedStringToAuthorityList("ROLE_USER");
 
-    @PutMapping(path = "{id}")
-    public void updateUser(@PathVariable("id") UUID id, @Valid @NotNull @RequestBody User userToUpdate){
-        userService.updateUser(id, userToUpdate);
-    }
+        // Create token based on given information
+        String token = Jwts.builder()
+                .setClaims(claims)
+                .claim("authorities",
+                        grantedAuthorities.stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .collect(Collectors.toList()))
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 600000))
+                .signWith(SignatureAlgorithm.HS512, "mySecretKey")
+                .compact();
 
+        return "Bearer " + token;
+    }
 }
