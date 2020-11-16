@@ -1,81 +1,104 @@
 package Doable.api;
 
 import Doable.model.User;
-import Doable.service.UserService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import Doable.model.userRowMapper;
+import Doable.service.JwtTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.IncorrectResultSetColumnCountException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import static Doable.SQLQuery.*;
 
-// todo: establish a connection with the oracle sql server
+// todo: add password hashing -> unhash and verify password
+// todo: clean up both endpoints
+// todo: comments
+// todo: testing both endpoints to find bugs
 
 @CrossOrigin
 @RequestMapping("api/v1/user")
 @RestController
 public class UserController {
 
-
-    private final UserService userService;
+    @Autowired
+    final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    private JwtTokenService jwtTokenService;
+
+    public UserController(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
+
+    /**
+     *
+     * @param email
+     * @param pwd
+     * @return
+     */
     @PostMapping("/register")
     public String register(@RequestParam("email") String email, @RequestParam("password") String pwd) {
-        // todo: Check if user already exists in the database else return error
-        // todo: add user to the database if user doesn't exists and return 200
-        User u = new User(UUID.randomUUID(), email, pwd);
-        String token = getJWTToken(u);
-        return token;
-    }
-
-    @PostMapping("/login")
-    public String login(@RequestParam("email") String email, @RequestParam("password") String pwd) {
-        // todo: check if username and password matches in the database else return error
-        // todo: if autheication is successful return code 200 and the authenication  token (if still valid) else create new token with getJWTToken method  */
-        // todo: change to GET Mapping
-
-        return "temp";
+        try {
+            // Check if user exists
+            jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL, new Object[]{email}, Integer.class);
+        } catch (EmptyResultDataAccessException e){
+            // Create new user
+            String token = jwtTokenService.generateToken(email);
+            User u = new User(UUID.randomUUID(), email, pwd, token);
+            if(jdbcTemplate.update(USER_INSERT, u.getId().toString(), u.getEmail(), u.getPassword(), token) == 1)
+                return "Bearer " + token;
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
+        }  catch (IncorrectResultSetColumnCountException e2){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+        }
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
     }
 
     /**
-     * Create a JWT token
-     * @param user new user data
-     * @return JWT token with HS512 signature
+     *
+     * @param email
+     * @param pwd
+     * @return
      */
-    private String getJWTToken(User user) {
-        Claims claims = Jwts.claims().setSubject(user.getEmail());
-        claims.put("userId", user.getId() + "");
-
-        // Create Role user
-        List<GrantedAuthority> grantedAuthorities = AuthorityUtils
-                .commaSeparatedStringToAuthorityList("ROLE_USER");
-
-        // Create token based on given information
-        String token = Jwts.builder()
-                .setClaims(claims)
-                .claim("authorities",
-                        grantedAuthorities.stream()
-                                .map(GrantedAuthority::getAuthority)
-                                .collect(Collectors.toList()))
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 600000))
-                .signWith(SignatureAlgorithm.HS512, "mySecretKey")
-                .compact();
-
-        return "Bearer " + token;
+    @PostMapping("/login")
+    public String login(@RequestParam("email") String email, @RequestParam("password") String pwd) {
+        try {
+            // Check if user exists
+            User user = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL, new Object[]{email}, new userRowMapper());
+            if(user != null && verifyPassword(pwd, user.getPassword())){
+                if(jwtTokenService.validateToken(user.getToken()))
+                    return user.getToken();
+                else {
+                    user.setToken(jwtTokenService.generateToken(user.getEmail()));
+                    jdbcTemplate.update(USER_TOKEN_UPDATE_BY_ID, user.getToken(), user.getId().toString());
+                    return "Bearer " + user.getToken();
+                }
+            }else{
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "username and password don't match");
+            }
+        } catch (EmptyResultDataAccessException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "We couldn't find user with that email");
+        }
     }
+
+    /**
+     *
+     * @param userpwd
+     * @param pwd
+     * @return
+     */
+    boolean verifyPassword(String userpwd, String pwd){
+        return userpwd.equals(pwd);
+    }
+
+
+
+
+
 }
