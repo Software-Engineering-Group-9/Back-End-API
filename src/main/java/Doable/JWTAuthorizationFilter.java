@@ -44,7 +44,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 } catch (IllegalArgumentException | MalformedJwtException | ExpiredJwtException e) {
                     logger.error("Unable to get JWT Token or JWT Token has expired");
                     //UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("anonymous", "anonymous", null);
-                    //SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.clearContext();
                 }
             } else {
                 SecurityContextHolder.clearContext();

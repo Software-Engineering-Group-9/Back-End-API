@@ -86,7 +86,7 @@ public class JwtTokenService {
      * @return
      */
     public String generateToken(String email){
-        Claims claims = Jwts.claims().setSubject(email.substring(0, '@'));
+        Claims claims = Jwts.claims().setSubject(email.substring(0, email.indexOf('@')));
 
         // Create Role user
         List<GrantedAuthority> grantedAuthorities = AuthorityUtils
