@@ -14,7 +14,7 @@ public class FakeUserDataAccessService implements UserDao {
     private static List<User> DB = new ArrayList<>();
 
     @Override
-    public int insertUser(UUID id, User user) {
+    public int insertUser(String id, User user) {
         DB.add(new User(id, user.getEmail(), user.getPassword(), null));
         return 1;
     }
@@ -25,7 +25,7 @@ public class FakeUserDataAccessService implements UserDao {
     }
 
     @Override
-    public Optional<User> selectUserById(UUID id) {
+    public Optional<User> selectUserById(String id) {
         return DB.stream().filter(user -> user.getId().equals(id)).findFirst();
     }
 
@@ -35,7 +35,7 @@ public class FakeUserDataAccessService implements UserDao {
     }
 
     @Override
-    public int deleteUserById(UUID id) {
+    public int deleteUserById(String id) {
         Optional<User> userMaybe = selectUserById(id);
 
         if(userMaybe.isEmpty()) return 0;
@@ -44,7 +44,7 @@ public class FakeUserDataAccessService implements UserDao {
     }
 
     @Override
-    public int updateUserById(UUID id, User updatedUser) {
+    public int updateUserById(String id, User updatedUser) {
         return selectUserById(id)
                 .map(u -> {
                     int indexOfUserToUpdate = DB.indexOf(u);

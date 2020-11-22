@@ -4,6 +4,7 @@ import Doable.service.CreateTableService;
 import Doable.service.JwtTokenService;
 import oracle.jdbc.proxy.annotation.Post;
 import org.json.JSONObject;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import javax.validation.constraints.NotNull;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+import static Doable.SQLCommand.AVAILABILITY_INSERT;
 import static Doable.SQLCommand.EVENT_INSERT;
 
 @CrossOrigin
@@ -28,8 +30,6 @@ public class CalendarController {
     private final JdbcTemplate jdbcTemplate;
 
     private final JwtTokenService jwtTokenService;
-
-
 
     public CalendarController(JdbcTemplate jdbcTemplate, JwtTokenService jwtTokenService, CreateTableService createTableService) {
         this.jdbcTemplate = jdbcTemplate;
@@ -45,15 +45,24 @@ public class CalendarController {
 
     }
 
-
     @PostMapping("/createAvailability")
     public void addAvailability(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request){
         createTableService.createAvailabilityTable("availabilityTable");
+        JSONObject jObject = new JSONObject(EventInfo);
+        jdbcTemplate.update(AVAILABILITY_INSERT, shortUUID(), jwtTokenService.getSubjectFromToken(getToken(request)), jObject.getString("starttime"), jObject.getString("endtime"));
     }
 
-    @PostMapping
-    public void addScheudledEventTable(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request){
+
+
+    /**
+     * Add scheudledEvent to calendars/dbs
+     * @param start_time
+     * @param end_time
+     * @param uuid
+     */
+    public void addScheudledEvent(String start_time, String end_time, String uuid){
         createTableService.createScheudledEventTable("scheudledEvent1");
+        jdbcTemplate.update(AVAILABILITY_INSERT, shortUUID(), uuid, start_time, end_time);
     }
 
     @PutMapping("/update")
@@ -84,6 +93,8 @@ public class CalendarController {
     public void Hello(HttpServletRequest request){
 
     }
+
+
 
     public static String shortUUID() {
         UUID uuid = UUID.randomUUID();

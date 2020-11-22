@@ -5,6 +5,7 @@ import Doable.model.userRowMapper;
 import Doable.service.CreateTableService;
 import Doable.service.JwtTokenService;
 import org.json.JSONObject;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -50,7 +51,7 @@ public class UserController {
      */
     @PostMapping("/register")
     public String register(@RequestBody String registerInfo) {
-        createTableService.createUserTable("user3");
+        createTableService.createUserTable("user4");
         String email = new JSONObject(registerInfo).getString("email");
         String pwd = new JSONObject(registerInfo).getString("password");
 
@@ -61,7 +62,7 @@ public class UserController {
             // Create new user
             String id = shortUUID();
             String token = jwtTokenService.generateToken(id);
-            User u = new User(id, email.toLowerCase(), pwd, token);
+            User u = new User(id, email.toLowerCase(), hashPassword(pwd), token);
             if(jdbcTemplate.update(USER_INSERT, u.getId(), u.getEmail(), u.getPassword(), token) == 1) {
                 return new JSONObject("{\"token\": Bearer "+token+"}").toString();
             }
@@ -84,7 +85,7 @@ public class UserController {
         try {
             // Check if user exists
             User user = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL, new Object[]{email.toLowerCase()}, new userRowMapper());
-            if(user != null && verifyPassword(pwd, user.getPassword())){
+            if(user != null && checkPass(pwd, user.getPassword())){
                 if (!jwtTokenService.validateToken(user.getToken())) {
                     user.setToken(jwtTokenService.generateToken(UUID.randomUUID().toString()));
                     jdbcTemplate.update(USER_TOKEN_UPDATE_BY_ID, user.getToken(), user.getId());
@@ -98,22 +99,19 @@ public class UserController {
         }
     }
 
-    /**
-     *
-     * @param userpwd
-     * @param pwd
-     * @return
-     */
-    boolean verifyPassword(String userpwd, String pwd){
-        return userpwd.equals(pwd);
-    }
-
     public static String shortUUID() {
         UUID uuid = UUID.randomUUID();
         long l = ByteBuffer.wrap(uuid.toString().getBytes()).getLong();
         return Long.toString(l, Character.MAX_RADIX);
     }
 
+    private String hashPassword(String plainTextPassword){
+        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
+    }
+
+    private boolean checkPass(String plainPassword, String hashedPassword) {
+        return BCrypt.checkpw(plainPassword, hashedPassword);
+    }
 
 
 
