@@ -1,5 +1,6 @@
-package Doable.model;
+package Doable.RowMapper;
 
+import Doable.model.User;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
