@@ -10,17 +10,20 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @SpringBootApplication
+@CrossOrigin
 public class Application {
 
-
+	@CrossOrigin
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
 
 	@EnableWebSecurity
 	@Configuration
+	@CrossOrigin
 	static
 	class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
