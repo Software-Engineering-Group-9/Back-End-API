@@ -51,7 +51,7 @@ public class UserController {
      */
     @PostMapping(REGISTER)
     public String register(@RequestBody String registerInfo) {
-        createTableService.createUserTable("user4");
+        createTableService.createUserTable(user);
         String email = new JSONObject(registerInfo).getString("email");
         String pwd = new JSONObject(registerInfo).getString("password");
 
@@ -81,6 +81,7 @@ public class UserController {
      */
     @PostMapping(LOGIN)
     public String login(@RequestBody String loginInfo) {
+        createTableService.createUserTable(user);
         String email = new JSONObject(loginInfo).getString("email");
         String pwd = new JSONObject(loginInfo).getString("password");
         try {

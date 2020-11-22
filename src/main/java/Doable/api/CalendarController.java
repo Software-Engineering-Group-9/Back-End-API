@@ -44,7 +44,7 @@ public class CalendarController {
      */
     @PostMapping(CREATE_EVENT)
     public void addEvent(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
-        createTableService.createTodoTable("todoEvent1");
+        createTableService.createTodoTable(event);
         JSONObject jObject = new JSONObject(EventInfo);
         System.out.println(jdbcTemplate.update(EVENT_INSERT, shortUUID(), jObject.getString("title"), jObject.getString("duedate"), jObject.getString("duetime"), jObject.getString("timeneed"), jwtTokenService.getSubjectFromToken(getToken(request))));
 
@@ -58,9 +58,9 @@ public class CalendarController {
      */
     @PostMapping(CREATE_AVAILABILITY)
     public void addAvailability(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
-        createTableService.createAvailabilityTable("availabilityTable");
+        createTableService.createAvailabilityTable(BusyScheudled);
         JSONObject jObject = new JSONObject(EventInfo);
-        jdbcTemplate.update(AVAILABILITY_INSERT, shortUUID(), jwtTokenService.getSubjectFromToken(getToken(request)), jObject.getString("starttime"), jObject.getString("endtime"));
+        jdbcTemplate.update(AVAILABILITY_INSERT, shortUUID(), jwtTokenService.getSubjectFromToken(getToken(request)), jObject.getString("date"),  jObject.getString("starttime"), jObject.getString("endtime"));
     }
 
     /**
@@ -70,6 +70,7 @@ public class CalendarController {
     @PostMapping(OPTIMIZE)
     public void optimize(HttpServletRequest request){
         Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new eventRowMapper());
+
     }
 
 
@@ -83,7 +84,7 @@ public class CalendarController {
      */
     public void addScheudledEvent(String start_time, String end_time, String uuid) {
         createTableService.createScheudledEventTable("scheudledEvent1");
-        jdbcTemplate.update(AVAILABILITY_INSERT, shortUUID(), uuid, start_time, end_time);
+        jdbcTemplate.update(SCHEUDLED_EVENT_INSERT, shortUUID(), uuid, start_time, end_time);
     }
 
     @PutMapping("/update")
