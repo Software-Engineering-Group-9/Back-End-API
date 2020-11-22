@@ -61,7 +61,7 @@ public class UserController {
             // Create new user
             String id = shortUUID();
             String token = jwtTokenService.generateToken(id);
-            User u = new User(id, email, pwd, token);
+            User u = new User(id, email.toLowerCase(), pwd, token);
             if(jdbcTemplate.update(USER_INSERT, u.getId(), u.getEmail(), u.getPassword(), token) == 1) {
                 return new JSONObject("{\"token\": Bearer "+token+"}").toString();
             }
@@ -83,7 +83,7 @@ public class UserController {
         String pwd = new JSONObject(loginInfo).getString("password");
         try {
             // Check if user exists
-            User user = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL, new Object[]{email}, new userRowMapper());
+            User user = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL, new Object[]{email.toLowerCase()}, new userRowMapper());
             if(user != null && verifyPassword(pwd, user.getPassword())){
                 if (!jwtTokenService.validateToken(user.getToken())) {
                     user.setToken(jwtTokenService.generateToken(UUID.randomUUID().toString()));
