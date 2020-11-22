@@ -1,5 +1,7 @@
 package Doable.api;
 
+import Doable.RowMapper.eventRowMapper;
+import Doable.model.Event;
 import Doable.service.CreateTableService;
 import Doable.service.JwtTokenService;
 import org.json.JSONObject;
@@ -11,10 +13,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.UUID;
 
-import static Doable.SQLCommand.AVAILABILITY_INSERT;
-import static Doable.SQLCommand.EVENT_INSERT;
+import static Doable.api.Endpoint.*;
+import static Doable.api.SQLCommand.*;
 
 @RequestMapping("api/v1/calendar")
 @RestController
@@ -39,7 +42,7 @@ public class CalendarController {
      * @param EventInfo event information
      * @param request   http request information
      */
-    @PostMapping("/createEvent")
+    @PostMapping(CREATE_EVENT)
     public void addEvent(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
         createTableService.createTodoTable("todoEvent1");
         JSONObject jObject = new JSONObject(EventInfo);
@@ -53,12 +56,22 @@ public class CalendarController {
      * @param EventInfo event information
      * @param request   http request information
      */
-    @PostMapping("/createAvailability")
+    @PostMapping(CREATE_AVAILABILITY)
     public void addAvailability(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
         createTableService.createAvailabilityTable("availabilityTable");
         JSONObject jObject = new JSONObject(EventInfo);
         jdbcTemplate.update(AVAILABILITY_INSERT, shortUUID(), jwtTokenService.getSubjectFromToken(getToken(request)), jObject.getString("starttime"), jObject.getString("endtime"));
     }
+
+    /**
+     *
+     * @param request
+     */
+    @PostMapping(OPTIMIZE)
+    public void optimize(HttpServletRequest request){
+        Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new eventRowMapper());
+    }
+
 
 
     /**
@@ -89,8 +102,8 @@ public class CalendarController {
     /**
      * Get authentication token
      *
-     * @param request
-     * @return
+     * @param request HTTP request information
+     * @return token from the HTTP request header
      */
     String getToken(HttpServletRequest request) {
         String PREFIX = "Bearer ";

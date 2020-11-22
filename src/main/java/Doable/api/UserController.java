@@ -17,13 +17,14 @@ import org.springframework.web.server.ResponseStatusException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-import static Doable.SQLCommand.*;
+import static Doable.api.Endpoint.*;
+import static Doable.api.SQLCommand.*;
 
 // todo: clean up both endpoints
 // todo: testing both endpoints to find bugs
 
 @CrossOrigin(origins = "*")
-@RequestMapping("api/v1/user")
+@RequestMapping(USER)
 @RestController
 public class UserController {
 
@@ -48,7 +49,7 @@ public class UserController {
      * @param registerInfo user inputted information (email and password)
      * @return token if success
      */
-    @PostMapping("/register")
+    @PostMapping(REGISTER)
     public String register(@RequestBody String registerInfo) {
         createTableService.createUserTable("user4");
         String email = new JSONObject(registerInfo).getString("email");
@@ -78,7 +79,7 @@ public class UserController {
      * @param loginInfo user inputted information (email and password)
      * @return JWT token if success
      */
-    @PostMapping("/login")
+    @PostMapping(LOGIN)
     public String login(@RequestBody String loginInfo) {
         String email = new JSONObject(loginInfo).getString("email");
         String pwd = new JSONObject(loginInfo).getString("password");

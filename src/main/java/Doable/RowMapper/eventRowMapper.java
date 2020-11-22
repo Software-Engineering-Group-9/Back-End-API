@@ -1,7 +1,6 @@
 package Doable.RowMapper;
 
 import Doable.model.Event;
-import Doable.model.User;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

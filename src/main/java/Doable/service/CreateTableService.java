@@ -2,10 +2,9 @@ package Doable.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import static Doable.SQLCommand.*;
+import static Doable.api.SQLCommand.*;
 
 @Service
 public class CreateTableService {
