@@ -87,7 +87,7 @@ public class CalendarController {
      * @param uuid       user uuid
      */
     public void addScheudledEvent(String start_time, String end_time, String uuid) {
-        createTableService.createScheudledEventTable("scheudledEvent1");
+        createTableService.createScheudledEventTable(scheudledEvent);
         jdbcTemplate.update(SCHEUDLED_EVENT_INSERT, shortUUID(), uuid, start_time, end_time);
     }
 
