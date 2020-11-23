@@ -55,22 +55,19 @@ public class UserController {
         String email = new JSONObject(registerInfo).getString("email");
         String pwd = new JSONObject(registerInfo).getString("password");
 
-        try {
-            // Check if user exists
-            jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL, new Object[]{email}, Integer.class);
-        } catch (EmptyResultDataAccessException e) {
-            // Create new user
+        Integer check = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL2, new Object[]{email}, Integer.class);
+        if(check == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
+        } else if(check == 0) {
             String id = shortUUID();
             String token = jwtTokenService.generateToken(id);
             User u = new User(id, email.toLowerCase(), hashPassword(pwd), token);
-            if (jdbcTemplate.update(USER_INSERT, u.getId(), u.getEmail(), u.getPassword(), token) == 1) {
+            if (jdbcTemplate.update(USER_INSERT, u.getId(), u.getEmail(), u.getPassword(), token) == 1)
                 return new JSONObject("{\"token\": Bearer " + token + "}").toString();
-            }
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
-        } catch (IncorrectResultSetColumnCountException e2) {
+            else
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
+        } else
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
-        }
-        throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
     }
 
     /**
@@ -84,8 +81,11 @@ public class UserController {
         createTableService.createUserTable(user);
         String email = new JSONObject(loginInfo).getString("email");
         String pwd = new JSONObject(loginInfo).getString("password");
-        try {
-            // Check if user exists
+
+        Integer check = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL2, new Object[]{email}, Integer.class);
+        if(check == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
+        } else if(check == 1) {
             User user = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL, new Object[]{email.toLowerCase()}, new userRowMapper());
             if (user != null && checkPass(pwd, user.getPassword())) {
                 if (!jwtTokenService.validateToken(user.getToken())) {
@@ -96,9 +96,8 @@ public class UserController {
             } else {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "username and password don't match");
             }
-        } catch (EmptyResultDataAccessException e) {
+        } else
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "We couldn't find user with that email");
-        }
     }
 
     /**
