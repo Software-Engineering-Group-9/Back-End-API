@@ -19,4 +19,8 @@ public class Event {
 
     }
 
+    @Override
+    public String toString() {
+        return "eid = " + eid + " | title = " + title + " | dueDate = " + dueDate + " | duetime = " + dueTime + " | timeneed = " + timeNeed;
+    }
 }

@@ -75,7 +75,9 @@ public class CalendarController {
     @PostMapping(OPTIMIZE)
     public void optimize(HttpServletRequest request){
         Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new eventRowMapper());
-
+        events.forEach(e ->{
+            System.out.println(e.toString());
+        });
     }
 
 
@@ -122,6 +124,7 @@ public class CalendarController {
      * @param request request info
      */
     @PostMapping("/hello")
+
     public void Hello(HttpServletRequest request) {
 
     }
