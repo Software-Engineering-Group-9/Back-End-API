@@ -63,7 +63,12 @@ public class CalendarController {
         jdbcTemplate.update(AVAILABILITY_INSERT, shortUUID(), jwtTokenService.getSubjectFromToken(getToken(request)), jObject.getString("date"),  jObject.getString("starttime"), jObject.getString("endtime"));
     }
 
+
+
     /**
+     * todo: create a method to convert busy schedules to available schedules
+     * todo: create a method that optimally put todo event into the scheduled event
+     * assigned to : Brandon and Salvador
      *
      * @param request
      */
@@ -72,7 +77,6 @@ public class CalendarController {
         Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new eventRowMapper());
 
     }
-
 
 
     /**
