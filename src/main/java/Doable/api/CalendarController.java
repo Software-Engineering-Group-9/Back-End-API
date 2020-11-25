@@ -1,20 +1,37 @@
 package Doable.api;
 
+import Doable.RowMapper.infoRowMapper;
+import Doable.RowMapper.scheduledEventRowMapper;
 import Doable.RowMapper.eventRowMapper;
 import Doable.model.Event;
+import Doable.model.info;
+import Doable.model.scheduledEvent;
 import Doable.service.CreateTableService;
 import Doable.service.JwtTokenService;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static Doable.api.Endpoint.*;
 import static Doable.api.SQLCommand.*;
@@ -63,7 +80,30 @@ public class CalendarController {
         jdbcTemplate.update(AVAILABILITY_INSERT, shortUUID(), jwtTokenService.getSubjectFromToken(getToken(request)), jObject.getString("date"),  jObject.getString("starttime"), jObject.getString("endtime"));
     }
 
-
+    /**
+     * Get the list of scheudled events based on the userid
+     *
+     * @param request
+     * @return
+     */
+    @GetMapping(GET_SCHEDULED_EVENT)
+    public String getScheduledEvent(HttpServletRequest request){
+        JSONObject obj = new JSONObject();
+        ObjectMapper mapper = new ObjectMapper();
+        List<scheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))},  new scheduledEventRowMapper());
+        obj.put("0", list.size());
+        for(int i = 0; i < list.size(); i++) {
+            String a;
+            try {
+                a = mapper.writeValueAsString(list.get(i));
+            } catch (JsonProcessingException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev sucks");
+            }
+            obj.put(Integer.toString(i+1), a);
+        }
+        System.out.println(obj.toString());
+        return obj.toString().replaceAll("\\\\", "");
+    }
 
     /**
      * todo: create a method to convert busy schedules to available schedules
@@ -74,12 +114,10 @@ public class CalendarController {
      */
     @PostMapping(OPTIMIZE)
     public void optimize(HttpServletRequest request){
+        System.out.println(jwtTokenService.getSubjectFromToken(getToken(request)));
         Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new eventRowMapper());
-        events.forEach(e ->{
-            System.out.println(e.toString());
-        });
+        events.forEach(e -> System.out.println(e.toString()));
     }
-
 
     /**
      * Add scheudledEvent to calendars/dbs
@@ -125,8 +163,8 @@ public class CalendarController {
      */
     @PostMapping("/hello")
 
-    public void Hello(HttpServletRequest request) {
-
+    public void Hello(HttpServletRequest request) throws JsonProcessingException {
+        sendEmail("sarkis8@uwindsor.ca");
     }
 
     /**
@@ -138,5 +176,47 @@ public class CalendarController {
         UUID uuid = UUID.randomUUID();
         long l = ByteBuffer.wrap(uuid.toString().getBytes()).getLong();
         return Long.toString(l, Character.MAX_RADIX);
+    }
+
+    void sendEmail(String email) {
+        info info = jdbcTemplate.queryForObject(GET_INFO, new infoRowMapper());
+
+        if(info != null) {
+            final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
+            // Get a Properties object
+            Properties props = System.getProperties();
+            props.setProperty("mail.smtp.host", "smtp.gmail.com");
+            props.setProperty("mail.smtp.socketFactory.class", SSL_FACTORY);
+            props.setProperty("mail.smtp.socketFactory.fallback", "false");
+            props.setProperty("mail.smtp.port", "465");
+            props.setProperty("mail.smtp.socketFactory.port", "465");
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.store.protocol", "pop3");
+            props.put("mail.transport.protocol", "smtp");
+            String username = info.getUsername();
+            String password = info.getPassword();
+            try {
+                Session session = Session.getDefaultInstance(props,
+                        new Authenticator() {
+                            protected PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(username, password);
+                            }
+                        });
+
+                Message msg = new MimeMessage(session);
+
+                msg.setFrom(new InternetAddress("Noreply@Doable.com", "Noreply"));
+                msg.setRecipients(Message.RecipientType.TO,
+                        InternetAddress.parse(email, false));
+                msg.setSubject("Welcome to doable");
+                msg.setText("Welcome to doable mother fucker!");
+                msg.setSentDate(new Date());
+                Transport.send(msg);
+            } catch (MessagingException e) {
+                System.out.println("Error, cause: " + e);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

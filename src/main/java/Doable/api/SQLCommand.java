@@ -9,7 +9,9 @@ public class SQLCommand {
     // QUERY TABLE COMMAND
     public static final String USER_QUERY_BY_EMAIL = "SELECT * FROM " + user + " WHERE EMAIL = ?";
     public static final String EVENT_QUERY_BY_UUID = "SELECT * FROM " + event + " WHERE USERID = ?";
-    public static final String USER_QUERY_BY_EMAIL2 = "SELECT count(*) from " + user + " where email = ?";
+    public static final String USER_QUERY_BY_EMAIL2 = "SELECT count(*) from " + user + " where EMAIL = ?";
+    public static final String SCHEDULED_EVENT_QUERY_BY_UUID = "select * from " + scheudledEvent + " where userid = ?";
+    public static final String GET_INFO = "SELECT * FROM info WHERE id = '1'";
 
     // INSERT INTO TABLE COMMAND
     public static final String USER_INSERT = "INSERT INTO " + user +" VALUES (?, ?, ?, ?)";

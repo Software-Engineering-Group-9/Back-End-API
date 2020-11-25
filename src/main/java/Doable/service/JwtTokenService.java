@@ -87,11 +87,11 @@ public class JwtTokenService {
 
     /**
      *
-     * @param email
+     * @param userid
      * @return
      */
-    public String generateToken(String email){
-        Claims claims = Jwts.claims().setSubject(email);
+    public String generateToken(String userid){
+        Claims claims = Jwts.claims().setSubject(userid);
 
         // Create Role user
         List<GrantedAuthority> grantedAuthorities = AuthorityUtils
