@@ -1,13 +1,13 @@
 package Doable.model;
 
-public class scheduledEvent {
+public class ScheduledEvent {
 
     private String sid;
     private String userid;
     private String starttime;
     private String endtime;
 
-    public scheduledEvent(String sid, String userid, String starttime, String endtime) {
+    public ScheduledEvent(String sid, String userid, String starttime, String endtime) {
         this.sid = sid;
         this.userid = userid;
         this.starttime = starttime;

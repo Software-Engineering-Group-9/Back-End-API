@@ -1,18 +1,15 @@
 package Doable.api;
 
-import Doable.RowMapper.infoRowMapper;
-import Doable.RowMapper.scheduledEventRowMapper;
-import Doable.RowMapper.eventRowMapper;
+import Doable.RowMapper.InfoRowMapper;
+import Doable.RowMapper.ScheduledEventRowMapper;
+import Doable.RowMapper.EventRowMapper;
 import Doable.model.Event;
-import Doable.model.info;
-import Doable.model.scheduledEvent;
+import Doable.model.Info;
+import Doable.model.ScheduledEvent;
 import Doable.service.CreateTableService;
 import Doable.service.JwtTokenService;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,18 +23,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static Doable.api.Endpoint.*;
 import static Doable.api.SQLCommand.*;
 
 @RequestMapping("api/v1/calendar")
 @RestController
+@CrossOrigin
 public class CalendarController {
 
 
@@ -90,7 +85,7 @@ public class CalendarController {
     public String getScheduledEvent(HttpServletRequest request){
         JSONObject obj = new JSONObject();
         ObjectMapper mapper = new ObjectMapper();
-        List<scheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))},  new scheduledEventRowMapper());
+        List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))},  new ScheduledEventRowMapper());
         obj.put("0", list.size());
         for(int i = 0; i < list.size(); i++) {
             String a;
@@ -115,7 +110,7 @@ public class CalendarController {
     @PostMapping(OPTIMIZE)
     public void optimize(HttpServletRequest request){
         System.out.println(jwtTokenService.getSubjectFromToken(getToken(request)));
-        Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new eventRowMapper());
+        Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new EventRowMapper());
         events.forEach(e -> System.out.println(e.toString()));
     }
 
@@ -179,7 +174,7 @@ public class CalendarController {
     }
 
     void sendEmail(String email) {
-        info info = jdbcTemplate.queryForObject(GET_INFO, new infoRowMapper());
+        Info info = jdbcTemplate.queryForObject(GET_INFO, new InfoRowMapper());
 
         if(info != null) {
             final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";

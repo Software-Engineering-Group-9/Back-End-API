@@ -1,16 +1,16 @@
 package Doable.RowMapper;
 
-import Doable.model.scheduledEvent;
+import Doable.model.ScheduledEvent;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class scheduledEventRowMapper implements RowMapper<scheduledEvent> {
+public class ScheduledEventRowMapper implements RowMapper<ScheduledEvent> {
 
     @Override
-    public scheduledEvent mapRow(ResultSet resultSet, int i) throws SQLException {
-           return  new scheduledEvent(resultSet.getString("sid"),
+    public ScheduledEvent mapRow(ResultSet resultSet, int i) throws SQLException {
+           return  new ScheduledEvent(resultSet.getString("sid"),
                     resultSet.getString("userid"),
                     resultSet.getString("starttime"),
                     resultSet.getString("endtime"));

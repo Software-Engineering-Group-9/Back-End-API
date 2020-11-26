@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class userRowMapper implements RowMapper<User> {
+public class UserRowMapper implements RowMapper<User> {
 
     /**
      * Create new user object with data from the DBs

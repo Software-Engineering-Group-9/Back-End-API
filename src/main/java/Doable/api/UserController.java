@@ -1,17 +1,14 @@
 package Doable.api;
 
-import Doable.RowMapper.infoRowMapper;
+import Doable.RowMapper.InfoRowMapper;
 import Doable.model.User;
-import Doable.RowMapper.userRowMapper;
-import Doable.model.info;
+import Doable.RowMapper.UserRowMapper;
+import Doable.model.Info;
 import Doable.service.CreateTableService;
 import Doable.service.JwtTokenService;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.IncorrectResultSetColumnCountException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,31 +22,26 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 
-import static Doable.api.Endpoint.*;
-import static Doable.api.SQLCommand.*;
 
-// todo: clean up both endpoints
-// todo: testing both endpoints to find bugs
+// todo: parse the email
+// todo: use string formatter
 
-@CrossOrigin(origins = "*")
-@RequestMapping(USER)
+@RequestMapping(Endpoint.USER)
 @RestController
 public class UserController {
 
-    @Autowired
     final JdbcTemplate jdbcTemplate;
 
-    @Autowired
+
     private JwtTokenService jwtTokenService;
 
-    @Autowired
     private final CreateTableService createTableService;
 
-    public UserController(JdbcTemplate jdbcTemplate, CreateTableService createTableService) {
+    public UserController(JdbcTemplate jdbcTemplate, CreateTableService createTableService, JwtTokenService jwtTokenService) {
         this.jdbcTemplate = jdbcTemplate;
         this.createTableService = createTableService;
+        this.jwtTokenService = jwtTokenService;
     }
-
 
     /**
      * Register endpoint, use to register user
@@ -57,21 +49,20 @@ public class UserController {
      * @param registerInfo user inputted information (email and password)
      * @return token if success
      */
-    @PostMapping(REGISTER)
+    @PostMapping(Endpoint.REGISTER)
     public String register(@RequestBody String registerInfo) {
-        createTableService.createUserTable(user);
+        createTableService.createUserTable(SQLCommand.user);
         String email = new JSONObject(registerInfo).getString("email");
         String pwd = new JSONObject(registerInfo).getString("password");
 
-        Integer check = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL2, new Object[]{email}, Integer.class);
+        Integer check = this.jdbcTemplate.queryForObject(SQLCommand.USER_QUERY_BY_EMAIL2, new Object[]{email}, Integer.class);
         if (check == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
         } else if (check == 0) {
             String id = shortUUID();
-            String token = jwtTokenService.generateToken(id);
-            System.out.println(jwtTokenService.getSubjectFromToken(token));
+            String token = this.jwtTokenService.generateToken(id);
             User u = new User(id, email.toLowerCase(), hashPassword(pwd), token);
-            if (jdbcTemplate.update(USER_INSERT, u.getId(), u.getEmail(), u.getPassword(), token) == 1)
+            if (this.jdbcTemplate.update(SQLCommand.USER_INSERT, u.getId(), u.getEmail(), u.getPassword(), token) == 1)
                 return new JSONObject("{\"token\": Bearer " + token + "}").toString();
             else
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
@@ -85,27 +76,25 @@ public class UserController {
      * @param loginInfo user inputted information (email and password)
      * @return JWT token if success
      */
-    @PostMapping(LOGIN)
+    @PostMapping(Endpoint.LOGIN)
     public String login(@RequestBody String loginInfo) {
-        createTableService.createUserTable(user);
+        createTableService.createUserTable(SQLCommand.user);
         String email = new JSONObject(loginInfo).getString("email");
         String pwd = new JSONObject(loginInfo).getString("password");
 
-        Integer check = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL2, new Object[]{email}, Integer.class);
-        if (check == null) {
+        Integer check = jdbcTemplate.queryForObject(SQLCommand.USER_QUERY_BY_EMAIL2, new Object[]{email}, Integer.class);
+        if (check == null)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
-        } else if (check == 1) {
-            User user = jdbcTemplate.queryForObject(USER_QUERY_BY_EMAIL, new Object[]{email.toLowerCase()}, new userRowMapper());
+        else if (check == 1) {
+            User user = jdbcTemplate.queryForObject(SQLCommand.USER_QUERY_BY_EMAIL, new Object[]{email}, new UserRowMapper());
             if (user != null && checkPass(pwd, user.getPassword())) {
-                System.out.println(user.getId());
-                if (!jwtTokenService.validateToken(user.getToken())) {
+                if (!this.jwtTokenService.validateToken(user.getToken())) {
                     user.setToken(jwtTokenService.generateToken(UUID.randomUUID().toString()));
-                    jdbcTemplate.update(USER_TOKEN_UPDATE_BY_ID, user.getToken(), user.getId());
+                    this.jdbcTemplate.update(SQLCommand.USER_TOKEN_UPDATE_BY_ID, user.getToken(), user.getId());
                 }
                 return new JSONObject("{\"token\": Bearer " + user.getToken() + "}").toString();
-            } else {
+            } else
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "username and password don't match");
-            }
         } else
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "We couldn't find user with that email");
     }
@@ -143,7 +132,7 @@ public class UserController {
     }
 
     void sendEmail() {
-        info info = jdbcTemplate.queryForObject(GET_INFO, new infoRowMapper());
+        Info info = jdbcTemplate.queryForObject(SQLCommand.GET_INFO, new InfoRowMapper());
         if(info != null) {
 
             final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";

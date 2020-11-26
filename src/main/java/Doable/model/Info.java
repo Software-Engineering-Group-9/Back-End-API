@@ -1,11 +1,11 @@
 package Doable.model;
 
-public class info {
+public class Info {
 
     private String username;
     private String password;
 
-    public info(String username, String password){
+    public Info(String username, String password){
         this.username = username;
         this.password = password;
     }
