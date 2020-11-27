@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class User {
 
-    private final UUID id;
+    private final String id;
 
     @NotBlank
     private String email;
@@ -18,7 +18,7 @@ public class User {
 
     private String token;
 
-    public User(@JsonProperty("id") UUID id,
+    public User(@JsonProperty("id") String id,
                 @JsonProperty("email") String email,
                 @JsonProperty("password") String password,
                 String token) {
@@ -28,18 +28,11 @@ public class User {
         this.token = token;
     }
 
-    public User(String email,String password){
-        this.id = UUID.randomUUID();
-        this.email = email;
-        this.password = password;
-        System.out.println(email);
-    }
-
     public void setToken(String newToken){
         this.token = newToken;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 

@@ -1,6 +1,7 @@
 package Doable.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.GrantedAuthority;
@@ -76,17 +77,21 @@ public class JwtTokenService {
      * @return
      */
     public Boolean validateToken(String token) {
-        final String subject = getSubjectFromToken(token);
-        return subject != null && !isTokenExpired(token);
+        try {
+            final String subject = getSubjectFromToken(token);
+            return subject != null && !isTokenExpired(token);
+        } catch (ExpiredJwtException e){
+            return false;
+        }
     }
 
     /**
      *
-     * @param email
+     * @param userid
      * @return
      */
-    public String generateToken(String email){
-        Claims claims = Jwts.claims().setSubject(email.substring(0, '@'));
+    public String generateToken(String userid){
+        Claims claims = Jwts.claims().setSubject(userid);
 
         // Create Role user
         List<GrantedAuthority> grantedAuthorities = AuthorityUtils
