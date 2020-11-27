@@ -28,8 +28,8 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
     private final JwtTokenService jwtTokenService;
 
-    public JWTAuthorizationFilter(JwtTokenService jwtTokenService, AuthenticationManager authMangaer) {
-        super(authMangaer);
+    public JWTAuthorizationFilter(JwtTokenService jwtTokenService, AuthenticationManager authManager) {
+        super(authManager);
         this.jwtTokenService = jwtTokenService;
     }
 
@@ -40,22 +40,17 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "10000");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with, Content-Type, origin, Authorization, accept, client-security-token");
-
-        String a = IteratorUtils.toList(request.getHeaderNames().asIterator()).toString();
         response.setStatus(HttpServletResponse.SC_OK);
-        System.out.println(a + "\n" + request.getHeader(HEADER) + "\n" + request.getHeader("origin"));
 
         if (!checkJWTToken(request.getHeader(HEADER))) {
             SecurityContextHolder.clearContext();
         } else {
-
             String token = getToken(request);
             if (jwtTokenService.validateToken(token)) {
                 Claims claims = jwtTokenService.getAllClaimsFromToken(getToken(request));
                 try {
-                    if (jwtTokenService.validateToken(token)) {
+                    if (jwtTokenService.validateToken(token))
                         setUpSpringAuthentication(claims);
-                    }
                 } catch (IllegalArgumentException | MalformedJwtException | ExpiredJwtException e) {
                     logger.error("Unable to get JWT Token or JWT Token has expired");
                     SecurityContextHolder.clearContext();

@@ -89,7 +89,7 @@ public class UserController {
             User user = jdbcTemplate.queryForObject(SQLCommand.USER_QUERY_BY_EMAIL, new Object[]{email}, new UserRowMapper());
             if (user != null && checkPass(pwd, user.getPassword())) {
                 if (!this.jwtTokenService.validateToken(user.getToken())) {
-                    user.setToken(jwtTokenService.generateToken(UUID.randomUUID().toString()));
+                    user.setToken(jwtTokenService.generateToken(user.getId()));
                     this.jdbcTemplate.update(SQLCommand.USER_TOKEN_UPDATE_BY_ID, user.getToken(), user.getId());
                 }
                 return new JSONObject("{\"token\": Bearer " + user.getToken() + "}").toString();

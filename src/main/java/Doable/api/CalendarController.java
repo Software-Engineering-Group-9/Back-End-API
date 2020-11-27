@@ -55,11 +55,10 @@ public class CalendarController {
      * @param request   http request information
      */
     @PostMapping(CREATE_EVENT)
-    public void addEvent(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
+    public String addEvent(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
         createTableService.createTodoTable(event);
         JSONObject jObject = new JSONObject(EventInfo);
-        System.out.println(jdbcTemplate.update(EVENT_INSERT, shortUUID(), jObject.getString("title"), jObject.getString("duedate"), jObject.getString("duetime"), jObject.getString("timeneed"), jwtTokenService.getSubjectFromToken(getToken(request))));
-
+        return jObject.put("1", "bobo is gay").toString();
     }
 
     /**
@@ -72,7 +71,14 @@ public class CalendarController {
     public void addAvailability(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
         createTableService.createAvailabilityTable(BusyScheudled);
         JSONObject jObject = new JSONObject(EventInfo);
-        jdbcTemplate.update(AVAILABILITY_INSERT, shortUUID(), jwtTokenService.getSubjectFromToken(getToken(request)), jObject.getString("date"),  jObject.getString("starttime"), jObject.getString("endtime"));
+        if(jdbcTemplate.update(BUSY_INSERT, jObject.getInt("id"),
+                jObject.getString("title"),
+                jObject.getString("start"),
+                jObject.getString("end"),
+                jObject.getString("color"),
+                jwtTokenService.getSubjectFromToken(getToken(request))) != 1)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend devs suck");
+
     }
 
     /**
@@ -82,19 +88,19 @@ public class CalendarController {
      * @return
      */
     @GetMapping(GET_SCHEDULED_EVENT)
-    public String getScheduledEvent(HttpServletRequest request){
+    public String getScheduledEvent(HttpServletRequest request) {
         JSONObject obj = new JSONObject();
         ObjectMapper mapper = new ObjectMapper();
-        List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))},  new ScheduledEventRowMapper());
+        List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new ScheduledEventRowMapper());
         obj.put("0", list.size());
-        for(int i = 0; i < list.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
             String a;
             try {
                 a = mapper.writeValueAsString(list.get(i));
             } catch (JsonProcessingException e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev sucks");
             }
-            obj.put(Integer.toString(i+1), a);
+            obj.put(Integer.toString(i + 1), a);
         }
         System.out.println(obj.toString());
         return obj.toString().replaceAll("\\\\", "");
@@ -108,7 +114,7 @@ public class CalendarController {
      * @param request
      */
     @PostMapping(OPTIMIZE)
-    public void optimize(HttpServletRequest request){
+    public void optimize(HttpServletRequest request) {
         System.out.println(jwtTokenService.getSubjectFromToken(getToken(request)));
         Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new EventRowMapper());
         events.forEach(e -> System.out.println(e.toString()));
@@ -176,7 +182,7 @@ public class CalendarController {
     void sendEmail(String email) {
         Info info = jdbcTemplate.queryForObject(GET_INFO, new InfoRowMapper());
 
-        if(info != null) {
+        if (info != null) {
             final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
             // Get a Properties object
             Properties props = System.getProperties();
