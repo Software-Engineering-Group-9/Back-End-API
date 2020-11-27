@@ -58,7 +58,7 @@ public class CalendarController {
     public String addEvent(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
         createTableService.createTodoTable(event);
         JSONObject jObject = new JSONObject(EventInfo);
-        return jObject.put("1", "bobo is gay").toString();
+        return null;
     }
 
     /**
@@ -75,7 +75,7 @@ public class CalendarController {
                 jObject.getString("title"),
                 jObject.getString("start"),
                 jObject.getString("end"),
-                jObject.getString("color"),
+                jObject.getString("bgColor"),
                 jwtTokenService.getSubjectFromToken(getToken(request))) != 1)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend devs suck");
 
