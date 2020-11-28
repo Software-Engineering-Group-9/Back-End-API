@@ -91,7 +91,9 @@ public class CalendarController {
     public String getScheduledEvent(HttpServletRequest request) {
         JSONObject obj = new JSONObject();
         ObjectMapper mapper = new ObjectMapper();
-        List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new ScheduledEventRowMapper());
+        List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID
+                , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
+                , new ScheduledEventRowMapper());
         obj.put("0", list.size());
         for (int i = 0; i < list.size(); i++) {
             String a;
@@ -132,19 +134,6 @@ public class CalendarController {
         jdbcTemplate.update(SCHEUDLED_EVENT_INSERT, shortUUID(), uuid, start_time, end_time);
     }
 
-    @PutMapping("/update")
-    public void updateEvent(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
-        JSONObject jObject = new JSONObject(EventInfo);
-
-    }
-
-    @DeleteMapping("/delete")
-    public void deleteEvent(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
-        JSONObject jObject = new JSONObject(EventInfo);
-
-    }
-
-
     /**
      * Get authentication token
      *
@@ -183,11 +172,9 @@ public class CalendarController {
         Info info = jdbcTemplate.queryForObject(GET_INFO, new InfoRowMapper());
 
         if (info != null) {
-            final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
-            // Get a Properties object
             Properties props = System.getProperties();
             props.setProperty("mail.smtp.host", "smtp.gmail.com");
-            props.setProperty("mail.smtp.socketFactory.class", SSL_FACTORY);
+            props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             props.setProperty("mail.smtp.socketFactory.fallback", "false");
             props.setProperty("mail.smtp.port", "465");
             props.setProperty("mail.smtp.socketFactory.port", "465");
@@ -205,12 +192,11 @@ public class CalendarController {
                         });
 
                 Message msg = new MimeMessage(session);
-
-                msg.setFrom(new InternetAddress("Noreply@Doable.com", "Noreply"));
+                msg.setFrom(new InternetAddress("Noreply@Doable.com", "Doable"));
                 msg.setRecipients(Message.RecipientType.TO,
                         InternetAddress.parse(email, false));
-                msg.setSubject("Welcome to doable");
-                msg.setText("Welcome to doable mother fucker!");
+                msg.setSubject("Welcome to Doable");
+                msg.setText("Welcome to doable!");
                 msg.setSentDate(new Date());
                 Transport.send(msg);
             } catch (MessagingException e) {
