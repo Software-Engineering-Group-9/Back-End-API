@@ -101,7 +101,6 @@ public class CalendarController {
         List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID
                 , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
                 , new ScheduledEventRowMapper());
-        obj.put("0", list.size());
         for (int i = 0; i < list.size(); i++) {
             String a;
             try {

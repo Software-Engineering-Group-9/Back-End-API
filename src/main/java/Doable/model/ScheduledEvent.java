@@ -6,12 +6,14 @@ public class ScheduledEvent {
     private String userid;
     private String starttime;
     private String endtime;
+    private String color;
 
-    public ScheduledEvent(String sid, String userid, String starttime, String endtime) {
+    public ScheduledEvent(String sid, String userid, String starttime, String endtime, String color) {
         this.sid = sid;
         this.userid = userid;
         this.starttime = starttime;
         this.endtime = endtime;
+        this.color = color;
     }
 
     public String getSid(){
@@ -28,6 +30,10 @@ public class ScheduledEvent {
 
     public String getEndtime(){
         return endtime;
+    }
+
+    public String getColor(){
+        return color;
     }
 
 }
