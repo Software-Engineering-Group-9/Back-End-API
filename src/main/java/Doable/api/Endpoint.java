@@ -10,4 +10,5 @@ public class Endpoint  {
     public static final String OPTIMIZE = "/optimize";
     public static final String GET_SCHEDULED_EVENT = "/getEvent";
     public static final String GET_TODO_EVENT = "/getTodoEvent";
+    public static final String GET_BUSY_EVENT = "/getBusyEvent";
 }
