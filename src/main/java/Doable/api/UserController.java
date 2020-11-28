@@ -24,6 +24,7 @@ import java.util.UUID;
 
 
 // todo: parse the email
+// todo: use string formatter
 
 @RequestMapping(Endpoint.USER)
 @RestController
@@ -54,18 +55,17 @@ public class UserController {
         String email = new JSONObject(registerInfo).getString("email");
         String pwd = new JSONObject(registerInfo).getString("password");
 
-        Integer check = this.jdbcTemplate.queryForObject(SQLCommand.USER_COUNT_QUERY_BY_EMAIL, new Object[]{email}, Integer.class);
-        if (check == null)
+        Integer check = this.jdbcTemplate.queryForObject(SQLCommand.USER_QUERY_BY_EMAIL2, new Object[]{email}, Integer.class);
+        if (check == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
-        else if (check == 0) {
+        } else if (check == 0) {
             String id = shortUUID();
             String token = this.jwtTokenService.generateToken(id);
             User u = new User(id, email.toLowerCase(), hashPassword(pwd), token);
-            if (this.jdbcTemplate.update(SQLCommand.USER_INSERT, u.getId(), u.getEmail(), u.getPassword(), token) == 1) {
-                //sendEmail(u.getEmail());
-                return new JSONObject(String.format("{token: Bearer %s, uuid: %s}", token, u.getId())).toString();
-            }else
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck, please try registering in later");
+            if (this.jdbcTemplate.update(SQLCommand.USER_INSERT, u.getId(), u.getEmail(), u.getPassword(), token) == 1)
+                return new JSONObject("{\"token\": Bearer " + token + "}").toString();
+            else
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
         } else
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
     }
@@ -82,7 +82,7 @@ public class UserController {
         String email = new JSONObject(loginInfo).getString("email");
         String pwd = new JSONObject(loginInfo).getString("password");
 
-        Integer check = jdbcTemplate.queryForObject(SQLCommand.USER_COUNT_QUERY_BY_EMAIL, new Object[]{email}, Integer.class);
+        Integer check = jdbcTemplate.queryForObject(SQLCommand.USER_QUERY_BY_EMAIL2, new Object[]{email}, Integer.class);
         if (check == null)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev suck");
         else if (check == 1) {
@@ -92,7 +92,7 @@ public class UserController {
                     user.setToken(jwtTokenService.generateToken(user.getId()));
                     this.jdbcTemplate.update(SQLCommand.USER_TOKEN_UPDATE_BY_ID, user.getToken(), user.getId());
                 }
-                return new JSONObject(String.format("{token: Bearer %s, uuid: %s}", user.getToken(),  user.getId())).toString();
+                return new JSONObject("{\"token\": Bearer " + user.getToken() + "}").toString();
             } else
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "username and password don't match");
         } else
@@ -131,9 +131,9 @@ public class UserController {
         return BCrypt.checkpw(plainPassword, hashedPassword);
     }
 
-    void sendEmail(String email) {
+    void sendEmail() {
         Info info = jdbcTemplate.queryForObject(SQLCommand.GET_INFO, new InfoRowMapper());
-        if (info != null) {
+        if(info != null) {
 
             final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
             // Get a Properties object

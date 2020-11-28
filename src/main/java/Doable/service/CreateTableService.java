@@ -17,14 +17,14 @@ public class CreateTableService {
         jdbcTemplate.update(CREATE_EVENT_TABLE);
     }
 
-    public void createBusyTable(String table_name){
+    public void createAvailabilityTable(String table_name){
         if(checkTable(table_name))
-            jdbcTemplate.update(CREATE_BUSY_TABLE);
+            jdbcTemplate.update(CREATE_AVAILABILITY_TABLE);
     }
 
     public void createScheudledEventTable(String table_name){
         if(checkTable(table_name))
-            jdbcTemplate.update(CREATE_SCHEDULED_TABLE);
+            jdbcTemplate.update(CREATE_SCHEUDLED_TABLE);
     }
 
     public void createUserTable(String table_name){
