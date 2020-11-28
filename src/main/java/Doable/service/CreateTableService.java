@@ -17,7 +17,7 @@ public class CreateTableService {
         jdbcTemplate.update(CREATE_EVENT_TABLE);
     }
 
-    public void createAvailabilityTable(String table_name){
+    public void createBusyTable(String table_name){
         if(checkTable(table_name))
             jdbcTemplate.update(CREATE_BUSY_TABLE);
     }

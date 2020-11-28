@@ -9,6 +9,30 @@ public class Event {
     private int timeNeed;
     private String uuid;
 
+    public String getEid() {
+        return eid;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDueDate() {
+        return dueDate;
+    }
+
+    public String getDueTime() {
+        return dueTime;
+    }
+
+    public int getTimeNeed() {
+        return timeNeed;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
     public Event(String eid, String title, String dueDate, String dueTime, int timeNeed, String uuid){
         this.eid = eid;
         this.title = title;
@@ -19,8 +43,5 @@ public class Event {
 
     }
 
-    @Override
-    public String toString() {
-        return "eid = " + eid + " | title = " + title + " | dueDate = " + dueDate + " | duetime = " + dueTime + " | timeneed = " + timeNeed;
-    }
+
 }

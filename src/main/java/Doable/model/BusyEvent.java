@@ -1,16 +1,15 @@
 package Doable.model;
 
-public class ScheduledEvent {
+public class BusyEvent {
 
-    private String sid;
+    private String aid;
     private String userid;
     private String starttime;
     private String endtime;
     private String color;
     private String title;
-
-    public ScheduledEvent(String title, String sid, String userid, String starttime, String endtime, String color) {
-        this.sid = sid;
+    public  BusyEvent(String aid, String title, String userid, String starttime, String endtime, String color) {
+        this.aid = aid;
         this.userid = userid;
         this.starttime = starttime;
         this.endtime = endtime;
@@ -18,27 +17,27 @@ public class ScheduledEvent {
         this.title = title;
     }
 
-    public String getSid() {
-        return sid;
+    public String getAid(){
+        return aid;
     }
 
-    public String getUserid() {
+    public String getUserid(){
         return userid;
     }
 
-    public String getStarttime() {
-        return starttime;
+    public String getStarttime(){
+        return  starttime;
     }
 
-    public String getEndtime() {
+    public String getEndtime(){
         return endtime;
     }
 
-    public String getColor() {
+    public String getColor(){
         return color;
     }
 
-    public String getTitle() {
+    public String getTitle(){
         return title;
     }
 

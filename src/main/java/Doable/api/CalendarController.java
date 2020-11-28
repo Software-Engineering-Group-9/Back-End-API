@@ -1,8 +1,10 @@
 package Doable.api;
 
+import Doable.RowMapper.BusyEventRowMapper;
 import Doable.RowMapper.InfoRowMapper;
 import Doable.RowMapper.ScheduledEventRowMapper;
 import Doable.RowMapper.EventRowMapper;
+import Doable.model.BusyEvent;
 import Doable.model.Event;
 import Doable.model.Info;
 import Doable.model.ScheduledEvent;
@@ -60,10 +62,9 @@ public class CalendarController {
         JSONObject jObject = new JSONObject(EventInfo);
         if (jdbcTemplate.update(EVENT_INSERT, jObject.getString("id"),
                 jObject.getString("title"),
-                jObject.getString("color"),
-                jObject.getString("duedate"),
-                jObject.getString("duetime"),
-                jObject.getInt("timeneed"),
+                jObject.getString("dueDate"),
+                jObject.getString("dueTime"),
+                jObject.getInt("timeNeeded"),
                 jwtTokenService.getSubjectFromToken(getToken(request))) != 1)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend devs suck");
     }
@@ -76,44 +77,15 @@ public class CalendarController {
      */
     @PostMapping(CREATE_AVAILABILITY)
     public void addAvailability(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
-        createTableService.createAvailabilityTable(busyScheduledEvent);
+        createTableService.createBusyTable(busyScheduledEvent);
         JSONObject jObject = new JSONObject(EventInfo);
         if (jdbcTemplate.update(BUSY_INSERT, jObject.getString("id"),
                 jObject.getString("title"),
-                jObject.getString("color"),
+                jObject.getString("bgColor"),
                 jObject.getString("start"),
                 jObject.getString("end"),
                 jwtTokenService.getSubjectFromToken(getToken(request))) != 1)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend devs suck");
-
-    }
-
-    /**
-     * Get the list of scheudled events based on the userid
-     *
-     * @param request http request information
-     * @return list of scheduled
-     */
-    @GetMapping(GET_SCHEDULED_EVENT)
-    public String getScheduledEvent(HttpServletRequest request) {
-        JSONObject obj = new JSONObject();
-        ObjectMapper mapper = new ObjectMapper();
-        List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID
-                , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
-                , new ScheduledEventRowMapper());
-        obj.put("0", list.size());
-        for (int i = 0; i < list.size(); i++) {
-            String a;
-            try {
-                a = mapper.writeValueAsString(list.get(i)).replaceAll("\"", "'");
-
-            } catch (JsonProcessingException e) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev sucks");
-            }
-            obj.put(Integer.toString(i + 1), a);
-        }
-
-        return obj.toString().replaceAll("\\\\", "").replaceAll("\"", "");
 
     }
 
@@ -131,11 +103,89 @@ public class CalendarController {
         events.forEach(e -> System.out.println(e.toString()));
     }
 
-
-    public void addScheudledEvent(String start_time, String end_time, String uuid) {
+    /**
+     * Add a scheduled event to the database
+     *
+     * @param sid id of the scheduled event
+     * @param title title of the event
+     * @param color color of the event (on the calendar)
+     * @param starttime start time of the event (includes date)
+     * @param endtime end time of the event (includes date)
+     * @param userid userid id, the event belongs to 
+     */
+    public void addScheduledEvent(String sid, String title, String color, String starttime, String endtime, String userid) {
         createTableService.createScheudledEventTable(scheduledEvent);
-        jdbcTemplate.update(SCHEDULED_EVENT_INSERT, shortUUID(), uuid, start_time, end_time);
+        jdbcTemplate.update(SCHEDULED_EVENT_INSERT, sid, title, color, starttime, endtime, userid);
     }
+
+    /**
+     * Get the list of scheudled events based on the userid
+     *
+     * @param request http request information
+     * @return list of scheduled
+     */
+    @GetMapping(GET_SCHEDULED_EVENT)
+    public String getScheduledEvent(HttpServletRequest request) {
+
+        List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID
+                , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
+                , new ScheduledEventRowMapper());
+        return convertListToJson(list);
+
+    }
+
+    /**
+     * get the list of busyEvent by userid
+     *
+     * @param request HTTP request information
+     * @return list of todoEvent in JSON string
+     */
+    @GetMapping(GET_BUSY_EVENT)
+    public String getBusyEvent(HttpServletRequest request){
+        List<BusyEvent> list = jdbcTemplate.query(BUSY_QUERY_BY_UUID
+                , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
+                , new BusyEventRowMapper());
+        return convertListToJson(list);
+
+    }
+
+    /**
+     * Get the list of todoEvent by userid
+     *
+     * @param request HTTP request information
+     * @return list of todoEvent in JSON string
+     */
+    @GetMapping(GET_TODO_EVENT)
+    public String getTodoEvent(HttpServletRequest request){
+        List<Event> list = jdbcTemplate.query(TODO_QUERY_BY_UUID
+                , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
+                , new EventRowMapper());
+
+        return convertListToJson(list);
+    }
+
+    /**
+     * Convert list of objects to JSON String
+     *
+     * @param list list of any objects
+     * @return JSON String of all the object in the list
+     */
+    String convertListToJson(List<?> list){
+        JSONObject obj = new JSONObject();
+        ObjectMapper mapper = new ObjectMapper();
+        for (int i = 0; i < list.size(); i++) {
+            String a;
+            try {
+                a = mapper.writeValueAsString(list.get(i)).replaceAll("\"", "'");
+
+            } catch (JsonProcessingException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev sucks");
+            }
+            obj.put(Integer.toString(i + 1), a);
+        }
+        return obj.toString().replaceAll("\\\\", "");
+    }
+
 
     /**
      * Get authentication token
@@ -144,8 +194,8 @@ public class CalendarController {
      * @return token from the HTTP request header
      */
     String getToken(HttpServletRequest request) {
-        String PREFIX = "Bearer ";
-        String HEADER = "Authorization";
+        final String PREFIX = "Bearer ";
+        final String HEADER = "Authorization";
         return request.getHeader(HEADER).replace(PREFIX, "");
     }
 
@@ -156,8 +206,7 @@ public class CalendarController {
      */
     @PostMapping("/hello")
 
-    public void Hello(HttpServletRequest request) throws JsonProcessingException {
-
+    public void Hello(HttpServletRequest request) {
     }
 
     /**
