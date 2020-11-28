@@ -14,6 +14,7 @@ public class SQLCommand {
     public static final String USER_COUNT_QUERY_BY_EMAIL = "SELECT count(*) from " + user + " where EMAIL = ?";
     public static final String SCHEDULED_EVENT_QUERY_BY_UUID = "select * from " + scheduledEvent + " where userid = ?";
     public static final String GET_INFO = "SELECT * FROM info WHERE id = '1'";
+    public static final String SCHEDULED_TODO_EVENT_QUERY_BY_UUID = "select * from " + todoEvent + " where userid = ?";
 
     // INSERT INTO TABLE COMMAND
     public static final String USER_INSERT = "INSERT INTO " + user +" VALUES (?, ?, ?, ?)";

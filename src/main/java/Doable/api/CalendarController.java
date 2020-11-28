@@ -89,6 +89,26 @@ public class CalendarController {
     }
 
     /**
+     * todo: create a method to convert busy schedules to available schedules
+     * todo: create a method that optimally put todo event into the scheduled event
+     * assigned to : Brandon and Salvador
+     *
+     * @param request
+     */
+    @PostMapping(OPTIMIZE)
+    public void optimize(HttpServletRequest request) {
+        System.out.println(jwtTokenService.getSubjectFromToken(getToken(request)));
+        Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new EventRowMapper());
+        events.forEach(e -> System.out.println(e.toString()));
+    }
+
+
+    public void addScheudledEvent(String sid, String start_time, String end_time, String uuid) {
+        createTableService.createScheudledEventTable(scheduledEvent);
+        jdbcTemplate.update(SCHEDULED_EVENT_INSERT, sid, uuid, start_time, end_time);
+    }
+
+    /**
      * Get the list of scheudled events based on the userid
      *
      * @param request http request information
@@ -116,25 +136,29 @@ public class CalendarController {
 
     }
 
-    /**
-     * todo: create a method to convert busy schedules to available schedules
-     * todo: create a method that optimally put todo event into the scheduled event
-     * assigned to : Brandon and Salvador
-     *
-     * @param request
-     */
-    @PostMapping(OPTIMIZE)
-    public void optimize(HttpServletRequest request) {
-        System.out.println(jwtTokenService.getSubjectFromToken(getToken(request)));
-        Collection<Event> events = jdbcTemplate.query(EVENT_QUERY_BY_UUID, new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}, new EventRowMapper());
-        events.forEach(e -> System.out.println(e.toString()));
+
+    @GetMapping(GET_TODO_EVENT)
+    public String getTodoEvent(HttpServletRequest request){
+        JSONObject obj = new JSONObject();
+        ObjectMapper mapper = new ObjectMapper();
+        List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_TODO_EVENT_QUERY_BY_UUID
+                , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
+                , new ScheduledEventRowMapper());
+        for (int i = 0; i < list.size(); i++) {
+            String a;
+            try {
+                a = mapper.writeValueAsString(list.get(i)).replaceAll("\"", "'");
+
+            } catch (JsonProcessingException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev sucks");
+            }
+            obj.put(Integer.toString(i + 1), a);
+        }
+
+        return obj.toString().replaceAll("\\\\", "").replaceAll("\"", "");
+
     }
 
-
-    public void addScheudledEvent(String start_time, String end_time, String uuid) {
-        createTableService.createScheudledEventTable(scheduledEvent);
-        jdbcTemplate.update(SCHEDULED_EVENT_INSERT, shortUUID(), uuid, start_time, end_time);
-    }
 
     /**
      * Get authentication token

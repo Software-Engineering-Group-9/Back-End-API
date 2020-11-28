@@ -15,8 +15,6 @@ public class ScheduledEventRowMapper implements RowMapper<ScheduledEvent> {
                 resultSet.getString("starttime"),
                 resultSet.getString("endtime"),
                 resultSet.getString("color"));
-
-
     }
 
 }
