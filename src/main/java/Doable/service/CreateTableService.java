@@ -19,12 +19,12 @@ public class CreateTableService {
 
     public void createAvailabilityTable(String table_name){
         if(checkTable(table_name))
-            jdbcTemplate.update(CREATE_AVAILABILITY_TABLE);
+            jdbcTemplate.update(CREATE_BUSY_TABLE);
     }
 
     public void createScheudledEventTable(String table_name){
         if(checkTable(table_name))
-            jdbcTemplate.update(CREATE_SCHEUDLED_TABLE);
+            jdbcTemplate.update(CREATE_SCHEDULED_TABLE);
     }
 
     public void createUserTable(String table_name){

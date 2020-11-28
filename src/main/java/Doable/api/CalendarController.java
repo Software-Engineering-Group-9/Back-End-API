@@ -55,10 +55,17 @@ public class CalendarController {
      * @param request   http request information
      */
     @PostMapping(CREATE_EVENT)
-    public String addEvent(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
-        createTableService.createTodoTable(event);
+    public void addEvent(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
+        createTableService.createTodoTable(todoEvent);
         JSONObject jObject = new JSONObject(EventInfo);
-        return null;
+        if (jdbcTemplate.update(EVENT_INSERT, jObject.getString("id"),
+                jObject.getString("title"),
+                jObject.getString("color"),
+                jObject.getString("duedate"),
+                jObject.getString("duetime"),
+                jObject.getInt("timeneed"),
+                jwtTokenService.getSubjectFromToken(getToken(request))) != 1)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend devs suck");
     }
 
     /**
@@ -69,13 +76,13 @@ public class CalendarController {
      */
     @PostMapping(CREATE_AVAILABILITY)
     public void addAvailability(@Valid @NotNull @RequestBody String EventInfo, HttpServletRequest request) {
-        createTableService.createAvailabilityTable(BusyScheudled);
+        createTableService.createAvailabilityTable(busyScheduledEvent);
         JSONObject jObject = new JSONObject(EventInfo);
-        if(jdbcTemplate.update(BUSY_INSERT, jObject.getInt("id"),
+        if (jdbcTemplate.update(BUSY_INSERT, jObject.getString("id"),
                 jObject.getString("title"),
+                jObject.getString("color"),
                 jObject.getString("start"),
                 jObject.getString("end"),
-                jObject.getString("bgColor"),
                 jwtTokenService.getSubjectFromToken(getToken(request))) != 1)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend devs suck");
 
@@ -84,8 +91,8 @@ public class CalendarController {
     /**
      * Get the list of scheudled events based on the userid
      *
-     * @param request
-     * @return
+     * @param request http request information
+     * @return list of scheduled
      */
     @GetMapping(GET_SCHEDULED_EVENT)
     public String getScheduledEvent(HttpServletRequest request) {
@@ -98,14 +105,16 @@ public class CalendarController {
         for (int i = 0; i < list.size(); i++) {
             String a;
             try {
-                a = mapper.writeValueAsString(list.get(i));
+                a = mapper.writeValueAsString(list.get(i)).replaceAll("\"", "'");
+
             } catch (JsonProcessingException e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev sucks");
             }
             obj.put(Integer.toString(i + 1), a);
         }
-        System.out.println(obj.toString());
-        return obj.toString().replaceAll("\\\\", "");
+
+        return obj.toString().replaceAll("\\\\", "").replaceAll("\"", "");
+
     }
 
     /**
@@ -122,16 +131,10 @@ public class CalendarController {
         events.forEach(e -> System.out.println(e.toString()));
     }
 
-    /**
-     * Add scheudledEvent to calendars/dbs
-     *
-     * @param start_time start time of the scheudled event
-     * @param end_time   end time of scheudled event
-     * @param uuid       user uuid
-     */
+
     public void addScheudledEvent(String start_time, String end_time, String uuid) {
-        createTableService.createScheudledEventTable(scheudledEvent);
-        jdbcTemplate.update(SCHEUDLED_EVENT_INSERT, shortUUID(), uuid, start_time, end_time);
+        createTableService.createScheudledEventTable(scheduledEvent);
+        jdbcTemplate.update(SCHEDULED_EVENT_INSERT, shortUUID(), uuid, start_time, end_time);
     }
 
     /**
@@ -154,7 +157,7 @@ public class CalendarController {
     @PostMapping("/hello")
 
     public void Hello(HttpServletRequest request) throws JsonProcessingException {
-        sendEmail("sarkis8@uwindsor.ca");
+
     }
 
     /**
@@ -168,42 +171,4 @@ public class CalendarController {
         return Long.toString(l, Character.MAX_RADIX);
     }
 
-    void sendEmail(String email) {
-        Info info = jdbcTemplate.queryForObject(GET_INFO, new InfoRowMapper());
-
-        if (info != null) {
-            Properties props = System.getProperties();
-            props.setProperty("mail.smtp.host", "smtp.gmail.com");
-            props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            props.setProperty("mail.smtp.socketFactory.fallback", "false");
-            props.setProperty("mail.smtp.port", "465");
-            props.setProperty("mail.smtp.socketFactory.port", "465");
-            props.put("mail.smtp.auth", "true");
-            props.put("mail.store.protocol", "pop3");
-            props.put("mail.transport.protocol", "smtp");
-            String username = info.getUsername();
-            String password = info.getPassword();
-            try {
-                Session session = Session.getDefaultInstance(props,
-                        new Authenticator() {
-                            protected PasswordAuthentication getPasswordAuthentication() {
-                                return new PasswordAuthentication(username, password);
-                            }
-                        });
-
-                Message msg = new MimeMessage(session);
-                msg.setFrom(new InternetAddress("Noreply@Doable.com", "Doable"));
-                msg.setRecipients(Message.RecipientType.TO,
-                        InternetAddress.parse(email, false));
-                msg.setSubject("Welcome to Doable");
-                msg.setText("Welcome to doable!");
-                msg.setSentDate(new Date());
-                Transport.send(msg);
-            } catch (MessagingException e) {
-                System.out.println("Error, cause: " + e);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
