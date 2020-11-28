@@ -105,13 +105,16 @@ public class CalendarController {
         for (int i = 0; i < list.size(); i++) {
             String a;
             try {
-                a = mapper.writeValueAsString(list.get(i));
+                a = mapper.writeValueAsString(list.get(i)).replaceAll("\"", "'");
+
             } catch (JsonProcessingException e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Our backend dev sucks");
             }
             obj.put(Integer.toString(i + 1), a);
         }
-        return obj.toString().replaceAll("\\\\", "");
+
+        return obj.toString().replaceAll("\\\\", "").replaceAll("\"", "");
+
     }
 
     /**

@@ -4,7 +4,7 @@ public class SQLCommand {
     public static final String user = "user5";
     public static final String todoEvent = "todoEvent3";
     public static final String busyScheduledEvent = "BusyScheudled7";
-    public static final String scheduledEvent = "scheudledEvent4";
+    public static final String scheduledEvent = "scheudledEvent3";
 
     // QUERY TABLE COMMAND
     public static final String TODO_QUERY_BY_UUID = "SELECT * FROM " + todoEvent + " WHERE USERID = ?";
