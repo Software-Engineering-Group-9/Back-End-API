@@ -1,6 +1,10 @@
 package Doable.model;
 
-public class Event {
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+public class TodoEvent {
 
     private String eid;
     private String title;
@@ -33,7 +37,7 @@ public class Event {
         return uuid;
     }
 
-    public Event(String eid, String title, String dueDate, String dueTime, int timeNeed, String uuid){
+    public TodoEvent(String eid, String title, String dueDate, String dueTime, int timeNeed, String uuid){
         this.eid = eid;
         this.title = title;
         this.dueDate = dueDate;
@@ -43,7 +47,7 @@ public class Event {
 
     }
 
-    public Event(String eid,  String uuid, String title, Date dueDate, int timeNeed, String color){
+    public TodoEvent(String eid, String uuid, String title, Date dueDate, int timeNeed, String color){
         this.eid = eid;
         this.title = title;
         this.dueDate = buildDateString(dueDate);
@@ -99,6 +103,10 @@ public class Event {
             System.err.println(e + " - Invalid Date Format!");
         }
         return todoDueDate;
+    }
+
+    public boolean isBefore(Date date){
+        return getDueAsDate().before(date);
     }
 
 
