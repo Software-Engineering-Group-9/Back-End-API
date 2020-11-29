@@ -11,8 +11,6 @@ public class AvailableEvent {
         this.end = end;
     }
 
-
-
     public Date getStart() {
         return start;
     }

@@ -1,25 +1,23 @@
 package Doable.model;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class BusyEvent {
 
     private String aid;
     private String userid;
-    private String starttime;
-    private String endtime;
     private String color;
     private String title;
-
-    private Date start;
-    private Date end;
+    private String start;
+    private String end;
 
     public  BusyEvent(String sid, String title, String userid, String starttime, String endtime, String color) {
         this.aid = sid;
         this.userid = userid;
-        this.starttime = starttime;
-        this.endtime = endtime;
+        this.start = starttime;
+        this.end = endtime;
         this.color = color;
         this.title = title;
     }
@@ -29,11 +27,45 @@ public class BusyEvent {
         this.aid = sid;
         this.userid = userid;
         this.title = title;
-        this.start = start;
-        this.end = end;
+        this.start = buildDateTimeString(start);
+        this.end = buildDateTimeString(end);
         this.color = color;
     }
-    
+
+    public String buildDateTimeString(Date date){
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        String ret = "";
+
+        ret += calendar.get(Calendar.YEAR) + "-";
+
+        if(calendar.get(Calendar.MONTH) + 1 < 10){
+            ret += "0";
+        }
+        ret += calendar.get(Calendar.MONTH) + 1 + "-";
+        if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
+            ret += "0";
+        }
+        ret += calendar.get(Calendar.DAY_OF_MONTH) + "T";
+
+
+        if(date.getHours() < 10) {
+            ret += "0";
+        }
+        ret += date.getHours() + ":";
+        if(date.getMinutes() < 10){
+            ret += "0";
+        }
+        ret += date.getMinutes() + ":";
+        if(date.getSeconds() < 10){
+            ret += "0";
+        }
+        ret += date.getSeconds();
+        return ret;
+    }
+
     public Date getDateFromString(String date){
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         Date todoDueDate =  new Date();
@@ -47,17 +79,21 @@ public class BusyEvent {
         return todoDueDate;
     }
 
+    public Date getStartDate(){
+        return getDateFromString(this.start);
+    }
+
+    public Date getEndDate(){
+        return getDateFromString(this.end);
+    }
+
     /**
      * Returns true iff both the event start and end dates are in the past
      * now is the current time
      */
     public boolean IsPastBusyEvent(){
         Date now = new Date(); //initialize to current time
-        return (this.start.before(now) && this.end.before(now));
-    }
-
-    public Date getStart() {
-        return start;
+        return (getStartDate().before(now) && getEndDate().before(now));
     }
 
     public String getAid(){
@@ -69,11 +105,11 @@ public class BusyEvent {
     }
 
     public String getStarttime(){
-        return  starttime;
+        return  start;
     }
 
     public String getEndtime(){
-        return endtime;
+        return end;
     }
 
     public String getColor(){
@@ -84,7 +120,4 @@ public class BusyEvent {
         return title;
     }
 
-    public Date getEnd() {
-        return end;
-    }
 }

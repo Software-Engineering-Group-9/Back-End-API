@@ -12,7 +12,9 @@ import Doable.service.JwtTokenService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
+import org.springframework.boot.json.GsonJsonParser;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -93,8 +95,8 @@ public class CalendarController {
      *
      * @param request
      */
-    @PostMapping(OPTIMIZE)
-    public void optimize(HttpServletRequest request) {
+    @GetMapping(OPTIMIZE)
+    public String optimize(HttpServletRequest request) {
         createTableService.createBusyTable(busyScheduledEvent);
         createTableService.createScheudledEventTable(scheduledEvent);
         createTableService.createTodoTable(todoEvent);
@@ -112,35 +114,40 @@ public class CalendarController {
         ArrayList<TodoEvent> todoEvents = new ArrayList<>();
         todoEvents.addAll(todoList);
         ArrayList<BusyEvent> busyEvents = new ArrayList<>();
-
+        busyEvents.addAll(busyList);
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
         //create sample to do and busyevents due between 11-22 and 11-23
-        try {
-            todoEvents.add(new TodoEvent("1", "1", "HW1", df.parse("2020-11-27 23:59"), 5, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "2", "HW2", df.parse("2020-11-27 20:00"), 1, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "3", "HW3", df.parse("2020-11-27 12:00"), 1, "#AAAAAA"));
+//        try {
+//            todoEvents.add(new TodoEvent("1", "1", "HW1", df.parse("2020-11-27 23:59"), 5, "#AAAAAA"));
+//            todoEvents.add(new TodoEvent("1", "2", "HW2", df.parse("2020-11-27 20:00"), 1, "#AAAAAA"));
+//            todoEvents.add(new TodoEvent("1", "3", "HW3", df.parse("2020-11-27 12:00"), 1, "#AAAAAA"));
+//
+//            todoEvents.add(new TodoEvent("1", "4", "HW4", df.parse("2020-11-28 20:00"), 1, "#AAAAAA"));
+//            todoEvents.add(new TodoEvent("1", "5", "HW5", df.parse("2020-11-28 23:59"), 6, "#AAAAAA"));
+//
+//            todoEvents.add(new TodoEvent("1", "6", "HW6", df.parse("2020-11-29 20:00"), 1, "#AAAAAA"));
+//            todoEvents.add(new TodoEvent("1", "7", "HW7", df.parse("2020-11-29 23:59"), 6, "#AAAAAA"));
+//
+//            todoEvents.add(new TodoEvent("1", "8", "HW8", df.parse("2020-11-30 20:00"), 1, "#AAAAAA"));
+//            todoEvents.add(new TodoEvent("1", "9", "HW9", df.parse("2020-11-30 23:59"), 6, "#AAAAAA"));
+//
+//            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-27 00:00"),   df.parse("2020-11-27 08:00"), "#BBBBBB")); //sleep 0-8am
+//            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-27 9:00"),    df.parse("2020-11-27 17:00"), "#BBBBBB")); //work 9am-5pm
+//            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-28 00:00"),   df.parse("2020-11-28 08:00"), "#BBBBBB"));// sleep 0-8am
+//            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-28 9:00"),    df.parse("2020-11-28 12:00"), "#BBBBBB")); //work 9am-12pm
+//            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-29 00:00"),   df.parse("2020-11-29 08:00"), "#BBBBBB")); //sleep 0-8am
+//            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-29:00"),      df.parse("2020-11-29 17:00"), "#BBBBBB")); //work 9am-5pm
+//            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-30 00:00"),   df.parse("2020-11-30 08:00"), "#BBBBBB"));// sleep 0-8am
+//            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-30 9:00"),    df.parse("2020-11-30 12:00"), "#BBBBBB")); //work 9am-12pm
+//        }catch(Exception e){
+//            System.out.println(e);
+//        }
 
-            todoEvents.add(new TodoEvent("1", "4", "HW4", df.parse("2020-11-28 20:00"), 1, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "5", "HW5", df.parse("2020-11-28 23:59"), 6, "#AAAAAA"));
-
-            todoEvents.add(new TodoEvent("1", "6", "HW6", df.parse("2020-11-29 20:00"), 1, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "7", "HW7", df.parse("2020-11-29 23:59"), 6, "#AAAAAA"));
-
-            todoEvents.add(new TodoEvent("1", "8", "HW8", df.parse("2020-11-30 20:00"), 1, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "9", "HW9", df.parse("2020-11-30 23:59"), 6, "#AAAAAA"));
-
-            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-27 00:00"),   df.parse("2020-11-27 08:00"), "#BBBBBB")); //sleep 0-8am
-            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-27 9:00"),    df.parse("2020-11-27 17:00"), "#BBBBBB")); //work 9am-5pm
-            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-28 00:00"),   df.parse("2020-11-28 08:00"), "#BBBBBB"));// sleep 0-8am
-            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-28 9:00"),    df.parse("2020-11-28 12:00"), "#BBBBBB")); //work 9am-12pm
-            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-29 00:00"),   df.parse("2020-11-29 08:00"), "#BBBBBB")); //sleep 0-8am
-            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-29:00"),      df.parse("2020-11-29 17:00"), "#BBBBBB")); //work 9am-5pm
-            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-30 00:00"),   df.parse("2020-11-30 08:00"), "#BBBBBB"));// sleep 0-8am
-            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-30 9:00"),    df.parse("2020-11-30 12:00"), "#BBBBBB")); //work 9am-12pm
-        }catch(Exception e){
-            System.out.println(e);
+        System.out.println("\n\nBusy Events: ");
+        for(BusyEvent busyEvent : busyEvents){
+            System.out.println(busyEvent.toString());
         }
 
         System.out.println("\n\nAvailable Events: ");
@@ -155,6 +162,9 @@ public class CalendarController {
         for(ScheduledEvent scheduledEvent : scheduledEvents){
             System.out.println(scheduledEvent);
         }
+
+
+        return convertListToJson(scheduledEvents);
     }
 
     public ArrayList<ScheduledEvent> Scheduler(ArrayList<TodoEvent> todoEvents, ArrayList<BusyEvent> busyEvents, String subject){
@@ -195,6 +205,7 @@ public class CalendarController {
             }
 
             float hrsPerEvent = todoEvent.getTimeNeed() / hoursAvailable;
+            float avgAvailableLength = hoursAvailable/availableEvents.size();
 
             //not enough time!
             if(todoEvent.getTimeNeed() > hoursAvailable){
@@ -204,6 +215,7 @@ public class CalendarController {
             float hrsLeft = todoEvent.getTimeNeed();
             for(AvailableEvent availableEvent : tempAvailableEvents){
                 float hrsThisEvent = availableEvent.GetSize()*hrsPerEvent;
+
                 if(hrsThisEvent % 0.5 != 0){
                     hrsThisEvent += (0.5 - (hrsThisEvent % 0.5));
                 }
@@ -249,9 +261,18 @@ public class CalendarController {
 
     //bubble sorts todoEvents by dueDate where the earlier dueDate appear earlier in the sorted list
     public void SortBusyEvents(ArrayList<BusyEvent> busyEvents) {
+        if(busyEvents.size() <= 1) return;
+        if(busyEvents.size() == 2) {
+            if(busyEvents.get(0).getStartDate().after(busyEvents.get(1).getStartDate())){
+                BusyEvent tempEvent = busyEvents.get(0);
+                busyEvents.set(0, busyEvents.get(1));
+                busyEvents.set(1, tempEvent);
+            }
+        }
+        System.out.println(busyEvents);
         for (int i = 0; i < busyEvents.size(); i++) {
             for (int j = 1; j < busyEvents.size() - i; j++) {
-                if (busyEvents.get(j - 1).getStart().after(busyEvents.get(j).getStart())){
+                if (busyEvents.get(j - 1).getStartDate().after(busyEvents.get(j).getStartDate())){
                     BusyEvent tempEvent = busyEvents.get(j - 1);
                     busyEvents.set(j - 1, busyEvents.get(j));
                     busyEvents.set(j, tempEvent);
@@ -275,7 +296,7 @@ public class CalendarController {
             tempDate.setMinutes(tempDate.getMinutes() + (15 - (tempDate.getMinutes() % 15)));
         }
 
-        if (busyEvents.isEmpty()){
+        if (busyEvents.isEmpty() && todoEvents.size() > 0){
             availableEvents.add(new AvailableEvent(tempDate, todoEvents.get(0).getDueAsDate()));
             return availableEvents;
         }
@@ -285,11 +306,11 @@ public class CalendarController {
         for(BusyEvent busyEvent : busyEvents){
             if(busyEvent.IsPastBusyEvent()) continue;
             //if the current gap is longer than 30 minutes, add the event
-            if(IsValidFutureEvent(tempDate, busyEvent.getStart())){
-                availableEvents.add(new AvailableEvent(tempDate, GetEndFromEventStart(busyEvent.getStart())));
+            if(IsValidFutureEvent(tempDate, busyEvent.getStartDate())){
+                availableEvents.add(new AvailableEvent(tempDate, GetEndFromEventStart(busyEvent.getStartDate())));
             }
             //System.out.println("now set from " + now + " to " + busyEvent.end);
-            tempDate = busyEvent.getEnd();
+            tempDate = busyEvent.getEndDate();
 
         }
         if(todoEvents.size() > 0 && IsValidFutureEvent(tempDate, todoEvents.get(todoEvents.size() - 1).getDueAsDate())){
@@ -328,18 +349,15 @@ public class CalendarController {
 
     /**
      * Get the list of scheudled events based on the userid
-     *
      * @param request http request information
      * @return list of scheduled
      */
     @GetMapping(GET_SCHEDULED_EVENT)
     public String getScheduledEvent(HttpServletRequest request) {
-
         List<ScheduledEvent> list = jdbcTemplate.query(SCHEDULED_EVENT_QUERY_BY_UUID
                 , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
                 , new ScheduledEventRowMapper());
         return convertListToJson(list);
-
     }
 
     /**
@@ -354,12 +372,10 @@ public class CalendarController {
                 , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
                 , new BusyEventRowMapper());
         return convertListToJson(list);
-
     }
 
     /**
      * Get the list of todoEvent by userid
-     *
      * @param request HTTP request information
      * @return list of todoEvent in JSON string
      */
@@ -368,7 +384,6 @@ public class CalendarController {
         List<TodoEvent> list = jdbcTemplate.query(TODO_QUERY_BY_UUID
                 , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
                 , new EventRowMapper());
-
         return convertListToJson(list);
     }
 
