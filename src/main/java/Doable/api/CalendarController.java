@@ -1,12 +1,11 @@
 package Doable.api;
 
 import Doable.RowMapper.BusyEventRowMapper;
-import Doable.RowMapper.InfoRowMapper;
 import Doable.RowMapper.ScheduledEventRowMapper;
 import Doable.RowMapper.EventRowMapper;
+import Doable.model.AvailableEvent;
 import Doable.model.BusyEvent;
-import Doable.model.Event;
-import Doable.model.Info;
+import Doable.model.TodoEvent;
 import Doable.model.ScheduledEvent;
 import Doable.service.CreateTableService;
 import Doable.service.JwtTokenService;
@@ -18,15 +17,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static Doable.api.Endpoint.*;
@@ -98,7 +95,7 @@ public class CalendarController {
      */
     @PostMapping(OPTIMIZE)
     public void optimize(HttpServletRequest request) {
-        createTableService.createAvailabilityTable(busyEvent);
+        createTableService.createBusyTable(busyScheduledEvent);
         createTableService.createScheudledEventTable(scheduledEvent);
         createTableService.createTodoTable(todoEvent);
 
@@ -224,7 +221,7 @@ public class CalendarController {
                     end = cal.getTime();
                 }
 
-                scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), end));
+                scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), end,"#BBBBBB" ));
                 busyEvents.add(new BusyEvent(subject, shortUUID(), todoEvent.getTitle(), availableEvent.getStart(), end, "#BBBBBB"));
             }
         }
@@ -368,7 +365,7 @@ public class CalendarController {
      */
     @GetMapping(GET_TODO_EVENT)
     public String getTodoEvent(HttpServletRequest request){
-        List<Event> list = jdbcTemplate.query(TODO_QUERY_BY_UUID
+        List<TodoEvent> list = jdbcTemplate.query(TODO_QUERY_BY_UUID
                 , new Object[]{jwtTokenService.getSubjectFromToken(getToken(request))}
                 , new EventRowMapper());
 

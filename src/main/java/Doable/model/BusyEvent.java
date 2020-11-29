@@ -1,5 +1,8 @@
 package Doable.model;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class BusyEvent {
 
     private String aid;
@@ -8,6 +11,9 @@ public class BusyEvent {
     private String endtime;
     private String color;
     private String title;
+
+    private Date start;
+    private Date end;
 
     public  BusyEvent(String sid, String title, String userid, String starttime, String endtime, String color) {
         this.aid = sid;
@@ -20,7 +26,7 @@ public class BusyEvent {
 
 
     public BusyEvent(String sid, String userid, String title, Date start, Date end, String color) {
-        this.sid = sid;
+        this.aid = sid;
         this.userid = userid;
         this.title = title;
         this.start = start;
@@ -50,6 +56,10 @@ public class BusyEvent {
         return (this.start.before(now) && this.end.before(now));
     }
 
+    public Date getStart() {
+        return start;
+    }
+
     public String getAid(){
         return aid;
     }
@@ -74,4 +84,7 @@ public class BusyEvent {
         return title;
     }
 
+    public Date getEnd() {
+        return end;
+    }
 }
