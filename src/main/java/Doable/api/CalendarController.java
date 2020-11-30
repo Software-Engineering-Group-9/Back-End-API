@@ -118,33 +118,6 @@ public class CalendarController {
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-        //create sample to do and busyevents due between 11-22 and 11-23
-//        try {
-//            todoEvents.add(new TodoEvent("1", "1", "HW1", df.parse("2020-11-27 23:59"), 5, "#AAAAAA"));
-//            todoEvents.add(new TodoEvent("1", "2", "HW2", df.parse("2020-11-27 20:00"), 1, "#AAAAAA"));
-//            todoEvents.add(new TodoEvent("1", "3", "HW3", df.parse("2020-11-27 12:00"), 1, "#AAAAAA"));
-//
-//            todoEvents.add(new TodoEvent("1", "4", "HW4", df.parse("2020-11-28 20:00"), 1, "#AAAAAA"));
-//            todoEvents.add(new TodoEvent("1", "5", "HW5", df.parse("2020-11-28 23:59"), 6, "#AAAAAA"));
-//
-//            todoEvents.add(new TodoEvent("1", "6", "HW6", df.parse("2020-11-29 20:00"), 1, "#AAAAAA"));
-//            todoEvents.add(new TodoEvent("1", "7", "HW7", df.parse("2020-11-29 23:59"), 6, "#AAAAAA"));
-//
-//            todoEvents.add(new TodoEvent("1", "8", "HW8", df.parse("2020-11-30 20:00"), 1, "#AAAAAA"));
-//            todoEvents.add(new TodoEvent("1", "9", "HW9", df.parse("2020-11-30 23:59"), 6, "#AAAAAA"));
-//
-//            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-27 00:00"),   df.parse("2020-11-27 08:00"), "#BBBBBB")); //sleep 0-8am
-//            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-27 9:00"),    df.parse("2020-11-27 17:00"), "#BBBBBB")); //work 9am-5pm
-//            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-28 00:00"),   df.parse("2020-11-28 08:00"), "#BBBBBB"));// sleep 0-8am
-//            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-28 9:00"),    df.parse("2020-11-28 12:00"), "#BBBBBB")); //work 9am-12pm
-//            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-29 00:00"),   df.parse("2020-11-29 08:00"), "#BBBBBB")); //sleep 0-8am
-//            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-29:00"),      df.parse("2020-11-29 17:00"), "#BBBBBB")); //work 9am-5pm
-//            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-30 00:00"),   df.parse("2020-11-30 08:00"), "#BBBBBB"));// sleep 0-8am
-//            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-30 9:00"),    df.parse("2020-11-30 12:00"), "#BBBBBB")); //work 9am-12pm
-//        }catch(Exception e){
-//            System.out.println(e);
-//        }
-
         System.out.println("\n\nBusy Events: ");
         for(BusyEvent busyEvent : busyEvents){
             System.out.println(busyEvent.toString());
@@ -162,7 +135,6 @@ public class CalendarController {
         for(ScheduledEvent scheduledEvent : scheduledEvents){
             System.out.println(scheduledEvent);
         }
-
 
         return convertListToJson(scheduledEvents);
     }
@@ -233,7 +205,7 @@ public class CalendarController {
                     end = cal.getTime();
                 }
 
-                scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), end,"#BBBBBB" ));
+                scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), end,"#BBBBBB"));
                 busyEvents.add(new BusyEvent(subject, shortUUID(), todoEvent.getTitle(), availableEvent.getStart(), end, "#BBBBBB"));
             }
         }
