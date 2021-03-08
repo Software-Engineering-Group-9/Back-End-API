@@ -164,16 +164,19 @@ public class CalendarController {
         List<AvailableEvent> availableEvents;
         List<AvailableEvent> tempAvailableEvents;
 
+        Map<Long, Float> availableDates;
+        Map<Long, List<AvailableEvent>> availableByDate;
+
         for(TodoEvent todoEvent : todoEvents){
 
             if(todoEvent.isBefore(new Date())){
-                System.err.println("Event past due!");
+                System.err.println ("Event past due!");
             }
 
             availableEvents = GetAvailability(busyEvents, todoEvents);
             tempAvailableEvents = new ArrayList<>();
 
-            //files tempAvailableEvents list with possible times for each todoEvent
+            //fills tempAvailableEvents list with possible times for each todoEvent
             for(AvailableEvent availableEvent : availableEvents){
                 if(availableEvent.getStart().before(todoEvent.getDueAsDate())){
                     if(availableEvent.getEnd().before(todoEvent.getDueAsDate())){
@@ -182,6 +185,13 @@ public class CalendarController {
                         tempAvailableEvents.add(new AvailableEvent(availableEvent.getStart(), todoEvent.getDueAsDate()));
                     }
                 }
+
+            }
+
+            for(AvailableEvent availableEvent : tempAvailableEvents){
+                if(availableEvent.getStart().after(todoEvent.getDueAsDate())){
+                    tempAvailableEvents.remove(availableEvent);
+                }
             }
 
             //if no availables exist for todoEvent
@@ -189,18 +199,39 @@ public class CalendarController {
                 continue;
             }
 
+            //refill dates map with hours available per day
+            availableDates = new HashMap<>();
+            availableByDate = new HashMap<>();
+            for(AvailableEvent availableEvent : tempAvailableEvents){
+                long date = availableEvent.getStart().getTime()/1000/60/60/24;
+                if(availableDates.get(date) == null){
+                    availableDates.put(date, availableEvent.GetSize());
+                    availableByDate.put(date, new  ArrayList<AvailableEvent>());
+                }else{
+                    availableDates.put(date, availableDates.get(date) + availableEvent.GetSize());
+                }
+                availableByDate.get(date).add(availableEvent);
+            }
+
+
+            //availableByDate.get(availableEvent.getStart().getDate()).add(availableEvent);
             float hoursAvailable = 0;
             for(AvailableEvent availableEvent : tempAvailableEvents){
                 hoursAvailable += availableEvent.GetSize();
             }
 
+<<<<<<< Updated upstream
             float hrsPerEvent = todoEvent.getTimeNeed() / hoursAvailable;
 
             //not enough time!
+=======
+            //not enough time for current event
+>>>>>>> Stashed changes
             if(todoEvent.getTimeNeed() > hoursAvailable){
                 System.err.println("Not enough time Available for event! Event: " + todoEvent.getTitle() + " Needed: " + todoEvent.getTimeNeed() + " HoursAvailable: " + hoursAvailable);
             }
 
+<<<<<<< Updated upstream
             float hrsLeft = todoEvent.getTimeNeed();
             for(AvailableEvent availableEvent : tempAvailableEvents){
                 float hrsThisEvent = availableEvent.GetSize()*hrsPerEvent;
@@ -223,7 +254,34 @@ public class CalendarController {
 
                 scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), end,"#BBBBBB" ));
                 busyEvents.add(new BusyEvent(subject, shortUUID(), todoEvent.getTitle(), availableEvent.getStart(), end, "#BBBBBB"));
+=======
+//            float hourRatio = (float) (todoEvent.getTimeNeed() / hoursAvailable * 1.5);
+//            float avgAvailableLength = hoursAvailable/availableDates.size();
+
+            //todo: create function to ensure that every day in map has enough time for timePerDay variable. if not, increase multiplier until earlier days make up difference
+
+            float timePerDay = (float) (todoEvent.getTimeNeed() / availableDates.size() * 1.5);
+            float tempTimePerDay;
+            //for each day until current to/do is due
+            for(long date : availableByDate.keySet()){
+                //for each event per day
+                tempTimePerDay = timePerDay;
+                for(AvailableEvent availableEvent : availableByDate.get(date)){
+                    if(availableEvent.GetSize() > tempTimePerDay){
+                        long endTime = availableEvent.getStart().getTime() + (long) (tempTimePerDay * 1000 * 60 * 60);
+                        Date endDate = new Date(endTime);
+                        scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), endDate,"#BBBBBB"));
+                        busyEvents.add(new BusyEvent(subject, shortUUID(), todoEvent.getTitle(), availableEvent.getStart(), endDate, "#BBBBBB"));
+                        break;
+                    }else{
+                        scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), availableEvent.getEnd(),"#BBBBBB"));
+                        busyEvents.add(new BusyEvent(subject, shortUUID(), todoEvent.getTitle(), availableEvent.getStart(), availableEvent.getEnd(), "#BBBBBB"));
+                        tempTimePerDay -= availableEvent.GetSize();
+                    }
+                }
+>>>>>>> Stashed changes
             }
+
         }
         return scheduledEvents;
     }
