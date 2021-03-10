@@ -112,37 +112,7 @@ public class CalendarController {
         ArrayList<TodoEvent> todoEvents = new ArrayList<>();
         todoEvents.addAll(todoList);
         ArrayList<BusyEvent> busyEvents = new ArrayList<>();
-
-
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-
-        //create sample to do and busyevents due between 11-22 and 11-23
-        try {
-            todoEvents.add(new TodoEvent("1", "1", "HW1", df.parse("2020-11-27 23:59"), 5, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "2", "HW2", df.parse("2020-11-27 20:00"), 1, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "3", "HW3", df.parse("2020-11-27 12:00"), 1, "#AAAAAA"));
-
-            todoEvents.add(new TodoEvent("1", "4", "HW4", df.parse("2020-11-28 20:00"), 1, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "5", "HW5", df.parse("2020-11-28 23:59"), 6, "#AAAAAA"));
-
-            todoEvents.add(new TodoEvent("1", "6", "HW6", df.parse("2020-11-29 20:00"), 1, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "7", "HW7", df.parse("2020-11-29 23:59"), 6, "#AAAAAA"));
-
-            todoEvents.add(new TodoEvent("1", "8", "HW8", df.parse("2020-11-30 20:00"), 1, "#AAAAAA"));
-            todoEvents.add(new TodoEvent("1", "9", "HW9", df.parse("2020-11-30 23:59"), 6, "#AAAAAA"));
-
-            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-27 00:00"),   df.parse("2020-11-27 08:00"), "#BBBBBB")); //sleep 0-8am
-            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-27 9:00"),    df.parse("2020-11-27 17:00"), "#BBBBBB")); //work 9am-5pm
-            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-28 00:00"),   df.parse("2020-11-28 08:00"), "#BBBBBB"));// sleep 0-8am
-            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-28 9:00"),    df.parse("2020-11-28 12:00"), "#BBBBBB")); //work 9am-12pm
-            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-29 00:00"),   df.parse("2020-11-29 08:00"), "#BBBBBB")); //sleep 0-8am
-            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-29:00"),      df.parse("2020-11-29 17:00"), "#BBBBBB")); //work 9am-5pm
-            busyEvents.add(new BusyEvent("1", "2", "sleep",   df.parse("2020-11-30 00:00"),   df.parse("2020-11-30 08:00"), "#BBBBBB"));// sleep 0-8am
-            busyEvents.add(new BusyEvent("1", "2", "work",    df.parse("2020-11-30 9:00"),    df.parse("2020-11-30 12:00"), "#BBBBBB")); //work 9am-12pm
-        }catch(Exception e){
-            System.out.println(e);
-        }
-
+        
         System.out.println("\n\nAvailable Events: ");
         ArrayList<AvailableEvent> availableEvents = GetAvailability(busyEvents, todoEvents);
         for(AvailableEvent availableEvent : availableEvents){
@@ -220,18 +190,12 @@ public class CalendarController {
                 hoursAvailable += availableEvent.GetSize();
             }
 
-<<<<<<< Updated upstream
             float hrsPerEvent = todoEvent.getTimeNeed() / hoursAvailable;
 
-            //not enough time!
-=======
-            //not enough time for current event
->>>>>>> Stashed changes
             if(todoEvent.getTimeNeed() > hoursAvailable){
                 System.err.println("Not enough time Available for event! Event: " + todoEvent.getTitle() + " Needed: " + todoEvent.getTimeNeed() + " HoursAvailable: " + hoursAvailable);
             }
 
-<<<<<<< Updated upstream
             float hrsLeft = todoEvent.getTimeNeed();
             for(AvailableEvent availableEvent : tempAvailableEvents){
                 float hrsThisEvent = availableEvent.GetSize()*hrsPerEvent;
@@ -254,32 +218,6 @@ public class CalendarController {
 
                 scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), end,"#BBBBBB" ));
                 busyEvents.add(new BusyEvent(subject, shortUUID(), todoEvent.getTitle(), availableEvent.getStart(), end, "#BBBBBB"));
-=======
-//            float hourRatio = (float) (todoEvent.getTimeNeed() / hoursAvailable * 1.5);
-//            float avgAvailableLength = hoursAvailable/availableDates.size();
-
-            //todo: create function to ensure that every day in map has enough time for timePerDay variable. if not, increase multiplier until earlier days make up difference
-
-            float timePerDay = (float) (todoEvent.getTimeNeed() / availableDates.size() * 1.5);
-            float tempTimePerDay;
-            //for each day until current to/do is due
-            for(long date : availableByDate.keySet()){
-                //for each event per day
-                tempTimePerDay = timePerDay;
-                for(AvailableEvent availableEvent : availableByDate.get(date)){
-                    if(availableEvent.GetSize() > tempTimePerDay){
-                        long endTime = availableEvent.getStart().getTime() + (long) (tempTimePerDay * 1000 * 60 * 60);
-                        Date endDate = new Date(endTime);
-                        scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), endDate,"#BBBBBB"));
-                        busyEvents.add(new BusyEvent(subject, shortUUID(), todoEvent.getTitle(), availableEvent.getStart(), endDate, "#BBBBBB"));
-                        break;
-                    }else{
-                        scheduledEvents.add(new ScheduledEvent(shortUUID(), subject,  todoEvent.getTitle(), availableEvent.getStart(), availableEvent.getEnd(),"#BBBBBB"));
-                        busyEvents.add(new BusyEvent(subject, shortUUID(), todoEvent.getTitle(), availableEvent.getStart(), availableEvent.getEnd(), "#BBBBBB"));
-                        tempTimePerDay -= availableEvent.GetSize();
-                    }
-                }
->>>>>>> Stashed changes
             }
 
         }
